@@ -1,0 +1,10 @@
+{
+  "name": "gameverse",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "گیماورس — پلتفرم اجتماعی چندبازیِ استاتیک (قابل اجرا روی GitHub Pages)",
+  "private": false,
+  "scripts": {
+    "start": "python3 -m http.server 8080"
+  }
+}

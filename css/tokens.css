@@ -1,0 +1,297 @@
+/* ============================================================
+   GameVerse — Design System (توکن‌ها + کامپوننت‌های پایه)
+   تم پیش‌فرض: تاریک حرفه‌ای-شاد | تم روشن با data-theme="light"
+   ============================================================ */
+
+:root {
+  /* رنگ‌های پایه */
+  --gv-bg: #0b0f1a;
+  --gv-bg-2: #0e1424;
+  --gv-surface: #121829;
+  --gv-surface-2: #1a2236;
+  --gv-glass: rgba(255, 255, 255, 0.055);
+  --gv-glass-strong: rgba(255, 255, 255, 0.09);
+  --gv-border: rgba(255, 255, 255, 0.09);
+  --gv-border-strong: rgba(255, 255, 255, 0.16);
+  --gv-text: #eef2ff;
+  --gv-muted: #93a1bd;
+
+  /* رنگ‌های برند */
+  --gv-primary: #7c3aed;
+  --gv-primary-2: #6366f1;
+  --gv-secondary: #06b6d4;
+  --gv-accent: #f59e0b;
+  --gv-success: #10b981;
+  --gv-warning: #f59e0b;
+  --gv-danger: #ef4444;
+
+  --gv-grad: linear-gradient(135deg, #7c3aed, #6366f1);
+  --gv-grad-2: linear-gradient(135deg, #06b6d4, #3b82f6);
+
+  /* فرم */
+  --gv-radius-sm: 10px;
+  --gv-radius: 14px;
+  --gv-radius-lg: 20px;
+  --gv-shadow-1: 0 4px 14px rgba(0, 0, 0, 0.28);
+  --gv-shadow-2: 0 12px 32px rgba(0, 0, 0, 0.38);
+  --gv-glow: 0 0 24px rgba(124, 58, 237, 0.35);
+  --gv-font: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+}
+
+/* ---------------- تم روشن ---------------- */
+[data-theme='light'] {
+  --gv-bg: #f4f6fb;
+  --gv-bg-2: #eef1f8;
+  --gv-surface: #ffffff;
+  --gv-surface-2: #f2f4fa;
+  --gv-glass: rgba(15, 23, 42, 0.04);
+  --gv-glass-strong: rgba(15, 23, 42, 0.07);
+  --gv-border: rgba(15, 23, 42, 0.1);
+  --gv-border-strong: rgba(15, 23, 42, 0.18);
+  --gv-text: #101733;
+  --gv-muted: #5b6780;
+  --gv-shadow-1: 0 4px 14px rgba(15, 23, 42, 0.1);
+  --gv-shadow-2: 0 12px 32px rgba(15, 23, 42, 0.14);
+}
+
+/* ---------------- ریست ---------------- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--gv-font);
+  background:
+    radial-gradient(1000px 500px at 85% -10%, rgba(124, 58, 237, 0.16), transparent 60%),
+    radial-gradient(800px 420px at -10% 15%, rgba(6, 182, 212, 0.12), transparent 60%),
+    var(--gv-bg);
+  background-attachment: fixed;
+  color: var(--gv-text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+}
+img { max-width: 100%; }
+button { font-family: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+::selection { background: rgba(124, 58, 237, 0.4); }
+
+::-webkit-scrollbar { width: 10px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gv-surface-2); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gv-border-strong); }
+
+:focus-visible { outline: 2px solid var(--gv-primary-2); outline-offset: 2px; border-radius: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ---------------- دکمه‌ها ---------------- */
+.gv-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: 1px solid transparent; border-radius: var(--gv-radius);
+  padding: 11px 20px; font-size: 14.5px; font-weight: 700; cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, opacity 0.15s;
+  user-select: none; white-space: nowrap; line-height: 1;
+}
+.gv-btn:active { transform: scale(0.97); }
+.gv-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.gv-btn-primary { background: var(--gv-grad); color: #fff; box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4); }
+.gv-btn-primary:hover { box-shadow: 0 8px 26px rgba(124, 58, 237, 0.55); transform: translateY(-1px); }
+.gv-btn-secondary { background: var(--gv-grad-2); color: #fff; box-shadow: 0 6px 20px rgba(6, 182, 212, 0.35); }
+.gv-btn-ghost { background: var(--gv-glass); border-color: var(--gv-border); color: var(--gv-text); }
+.gv-btn-ghost:hover { background: var(--gv-glass-strong); }
+.gv-btn-danger { background: rgba(239, 68, 68, 0.14); color: var(--gv-danger); border-color: rgba(239, 68, 68, 0.35); }
+.gv-btn-success { background: rgba(16, 185, 129, 0.15); color: var(--gv-success); border-color: rgba(16, 185, 129, 0.4); }
+.gv-btn-sm { padding: 7px 13px; font-size: 12.5px; border-radius: 10px; }
+.gv-btn-lg { padding: 15px 30px; font-size: 16.5px; border-radius: var(--gv-radius-lg); }
+.gv-btn-icon { padding: 9px; width: 40px; height: 40px; border-radius: 12px; font-size: 17px; }
+.gv-btn-block { width: 100%; }
+
+/* ---------------- کارت‌ها ---------------- */
+.gv-card {
+  background: var(--gv-surface);
+  border: 1px solid var(--gv-border);
+  border-radius: var(--gv-radius-lg);
+  box-shadow: var(--gv-shadow-1);
+}
+.gv-glass {
+  background: var(--gv-glass);
+  border: 1px solid var(--gv-border);
+  border-radius: var(--gv-radius-lg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* ---------------- بج‌ها و چیپ‌ها ---------------- */
+.gv-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 11.5px; font-weight: 700; line-height: 1.6;
+}
+.gv-badge-primary { background: rgba(124, 58, 237, 0.18); color: #b7a3f8; }
+.gv-badge-success { background: rgba(16, 185, 129, 0.15); color: var(--gv-success); }
+.gv-badge-warning { background: rgba(245, 158, 11, 0.15); color: var(--gv-accent); }
+.gv-badge-danger  { background: rgba(239, 68, 68, 0.15); color: var(--gv-danger); }
+.gv-badge-info    { background: rgba(6, 182, 212, 0.15); color: #22d3ee; }
+.gv-badge-muted   { background: var(--gv-glass); color: var(--gv-muted); }
+[data-theme='light'] .gv-badge-primary { color: #6d28d9; }
+
+.gv-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 15px; border-radius: 999px; cursor: pointer;
+  background: var(--gv-glass); border: 1px solid var(--gv-border);
+  font-size: 13px; font-weight: 600; transition: all 0.15s;
+  white-space: nowrap;
+}
+.gv-chip:hover { background: var(--gv-glass-strong); }
+.gv-chip.active { background: var(--gv-grad); border-color: transparent; color: #fff; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4); }
+
+/* ---------------- ورودی‌ها ---------------- */
+.gv-input, .gv-select, .gv-textarea {
+  width: 100%; background: var(--gv-surface-2); color: var(--gv-text);
+  border: 1px solid var(--gv-border); border-radius: var(--gv-radius);
+  padding: 11px 15px; font-family: inherit; font-size: 14.5px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.gv-input:focus, .gv-select:focus, .gv-textarea:focus {
+  outline: none; border-color: var(--gv-primary-2);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
+}
+.gv-input::placeholder { color: var(--gv-muted); }
+.gv-label { display: block; font-size: 12.5px; font-weight: 700; color: var(--gv-muted); margin-bottom: 6px; }
+
+/* ---------------- مودال ---------------- */
+.gv-modal-back {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(5, 8, 16, 0.72); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; padding: 18px;
+  animation: gv-fade 0.18s ease;
+}
+.gv-modal {
+  width: min(94vw, 480px); max-height: 88vh; overflow: auto;
+  background: var(--gv-surface); border: 1px solid var(--gv-border-strong);
+  border-radius: var(--gv-radius-lg); box-shadow: var(--gv-shadow-2);
+  animation: gv-pop 0.22s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.gv-modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--gv-border);
+  font-weight: 800; font-size: 16px;
+}
+.gv-modal-body { padding: 20px; }
+.gv-modal-foot { display: flex; gap: 10px; justify-content: flex-start; padding: 14px 20px; border-top: 1px solid var(--gv-border); }
+@keyframes gv-fade { from { opacity: 0; } }
+@keyframes gv-pop { from { opacity: 0; transform: scale(0.92) translateY(10px); } }
+
+/* ---------------- توست ---------------- */
+.gv-toasts { position: fixed; bottom: 18px; right: 50%; transform: translateX(50%); z-index: 1200; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
+.gv-toast {
+  display: flex; align-items: center; gap: 9px;
+  background: var(--gv-surface-2); color: var(--gv-text);
+  border: 1px solid var(--gv-border-strong); border-radius: 999px;
+  padding: 10px 20px; font-size: 13.5px; font-weight: 700;
+  box-shadow: var(--gv-shadow-2); animation: gv-toast-in 0.25s cubic-bezier(0.2, 1.4, 0.4, 1);
+  max-width: min(92vw, 480px);
+}
+.gv-toast.success { border-color: rgba(16, 185, 129, 0.5); }
+.gv-toast.error { border-color: rgba(239, 68, 68, 0.5); }
+.gv-toast.reward { border-color: rgba(245, 158, 11, 0.55); }
+.gv-toast.out { animation: gv-toast-out 0.25s forwards; }
+@keyframes gv-toast-in { from { opacity: 0; transform: translateY(16px) scale(0.9); } }
+@keyframes gv-toast-out { to { opacity: 0; transform: translateY(10px) scale(0.92); } }
+
+/* ---------------- نوار پیشرفت ---------------- */
+.gv-progress { height: 9px; background: var(--gv-surface-2); border-radius: 999px; overflow: hidden; border: 1px solid var(--gv-border); }
+.gv-progress > div {
+  height: 100%; border-radius: 999px; background: var(--gv-grad);
+  transition: width 0.5s cubic-bezier(0.3, 1, 0.4, 1); position: relative;
+}
+.gv-progress > div::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  animation: gv-shine 2.2s infinite;
+}
+@keyframes gv-shine { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+/* ---------------- آواتار ---------------- */
+.gv-avatar {
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%; color: #fff; font-weight: 800; flex-shrink: 0;
+  background: var(--gv-grad); position: relative; user-select: none;
+}
+.gv-avatar.sm { width: 34px; height: 34px; font-size: 16px; }
+.gv-avatar.md { width: 46px; height: 46px; font-size: 22px; }
+.gv-avatar.lg { width: 72px; height: 72px; font-size: 34px; }
+.gv-avatar.xl { width: 96px; height: 96px; font-size: 44px; }
+.gv-avatar.f-gold { box-shadow: 0 0 0 2.5px #f59e0b, 0 0 18px rgba(245, 158, 11, 0.55); }
+.gv-avatar.f-neon { box-shadow: 0 0 0 2.5px #22d3ee, 0 0 18px rgba(34, 211, 238, 0.55); }
+.gv-avatar.f-royal { box-shadow: 0 0 0 3px #a78bfa, 0 0 0 6px rgba(167, 139, 250, 0.25); }
+.gv-avatar.f-flame { box-shadow: 0 0 0 2.5px #f97316, 0 0 18px rgba(249, 115, 22, 0.55); }
+
+/* نشانگر وضعیت آنلاین */
+.gv-dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; border: 2px solid var(--gv-surface); }
+.gv-dot.online { background: #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.8); }
+.gv-dot.ingame { background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.8); }
+.gv-dot.away { background: #eab308; opacity: 0.8; }
+.gv-dot.offline { background: #64748b; }
+
+/* ---------------- بخش‌ها و ردیف‌های افقی ---------------- */
+.gv-section { margin: 26px 0; }
+.gv-section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 13px; gap: 10px;
+}
+.gv-section-title { font-size: 17.5px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.gv-hscroll {
+  display: flex; gap: 13px; overflow-x: auto; padding: 4px 2px 14px;
+  scroll-snap-type: x mandatory; scrollbar-width: none;
+}
+.gv-hscroll::-webkit-scrollbar { display: none; }
+.gv-hscroll > * { scroll-snap-align: start; flex-shrink: 0; }
+
+/* ---------------- جدول ---------------- */
+.gv-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.gv-table th {
+  text-align: right; color: var(--gv-muted); font-size: 12px; font-weight: 700;
+  padding: 10px 12px; border-bottom: 1px solid var(--gv-border);
+}
+.gv-table td { padding: 11px 12px; border-bottom: 1px solid var(--gv-border); }
+.gv-table tr:last-child td { border-bottom: none; }
+.gv-table tr.me { background: rgba(124, 58, 237, 0.12); }
+.gv-table tr:hover td { background: var(--gv-glass); }
+
+/* ---------------- تب‌ها ---------------- */
+.gv-tabs { display: flex; gap: 6px; background: var(--gv-glass); padding: 5px; border-radius: 14px; border: 1px solid var(--gv-border); overflow-x: auto; scrollbar-width: none; }
+.gv-tabs::-webkit-scrollbar { display: none; }
+.gv-tab {
+  flex: 1; text-align: center; padding: 9px 16px; border-radius: 10px; border: none;
+  background: transparent; color: var(--gv-muted); font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.gv-tab.active { background: var(--gv-grad); color: #fff; box-shadow: 0 3px 10px rgba(124, 58, 237, 0.35); }
+
+/* ---------------- حالت خالی ---------------- */
+.gv-empty { text-align: center; padding: 46px 20px; color: var(--gv-muted); }
+.gv-empty .icon { font-size: 44px; margin-bottom: 12px; }
+.gv-empty .msg { font-size: 14.5px; margin-bottom: 16px; line-height: 1.9; }
+
+/* ---------------- اسکلتون لودینگ ---------------- */
+.gv-skeleton {
+  background: linear-gradient(90deg, var(--gv-surface-2) 25%, var(--gv-glass-strong) 50%, var(--gv-surface-2) 75%);
+  background-size: 200% 100%; animation: gv-skel 1.3s infinite; border-radius: var(--gv-radius);
+}
+@keyframes gv-skel { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+/* ---------------- ابزار ---------------- */
+.gv-row { display: flex; align-items: center; gap: 10px; }
+.gv-between { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.gv-muted-c { color: var(--gv-muted); }
+.gv-grad-text { background: var(--gv-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.gv-hidden { display: none !important; }
+.gv-fade-in { animation: gv-fade 0.3s ease; }
+
+@media (max-width: 640px) {
+  .gv-btn { padding: 11px 16px; }
+  .gv-modal-foot { flex-direction: column-reverse; }
+  .gv-modal-foot .gv-btn { width: 100%; }
+}

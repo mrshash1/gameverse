@@ -1,0 +1,119 @@
+/* ============================================================
+   GameVerse — استایل صفحه‌ها ۱: پوسته، خانه، کشف، جزئیات
+   ============================================================ */
+
+/* ---------------- چیدمان عمومی ---------------- */
+.gv-outlet { min-height: calc(100vh - 120px); }
+.gv-page { max-width: 1180px; margin: 0 auto; padding: 22px 18px 90px; }
+.gv-page-head { margin-bottom: 20px; }
+.gv-page-head h1 { font-size: 24px; font-weight: 900; margin-bottom: 6px; }
+.gv-more-link { font-size: 12.5px; color: var(--gv-muted); font-weight: 700; }
+.gv-more-link:hover { color: var(--gv-text); }
+
+/* ---------------- نوبار ---------------- */
+.gv-navbar { position: sticky; top: 0; z-index: 500; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); background: color-mix(in srgb, var(--gv-bg) 78%, transparent); border-bottom: 1px solid var(--gv-border); }
+.gv-nav-inner { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; gap: 18px; padding: 10px 18px; }
+.gv-logo { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 900; }
+.gv-nav-links { display: flex; gap: 4px; flex: 1; }
+.gv-nav-link { padding: 9px 14px; border-radius: 12px; font-size: 13.5px; font-weight: 700; color: var(--gv-muted); transition: all .15s; }
+.gv-nav-link:hover { color: var(--gv-text); background: var(--gv-glass); }
+.gv-nav-link.active { color: var(--gv-text); background: var(--gv-glass-strong); }
+.gv-nav-actions { display: flex; align-items: center; gap: 8px; }
+.gv-bell-wrap { position: relative; display: inline-flex; }
+.gv-bell-badge { position: absolute; top: -5px; left: -5px; background: var(--gv-danger); color: #fff; font-size: 10px; font-weight: 800; min-width: 18px; height: 18px; border-radius: 999px; display: flex; align-items: center; justify-content: center; padding: 0 4px; box-shadow: 0 2px 8px rgba(239,68,68,.5); }
+.gv-user-btn { background: none; border: none; cursor: pointer; padding: 2px; border-radius: 50%; }
+#gv-user-menu { position: relative; }
+.gv-menu { position: absolute; top: calc(100% + 10px); left: 0; min-width: 190px; background: var(--gv-surface); border: 1px solid var(--gv-border-strong); border-radius: var(--gv-radius); box-shadow: var(--gv-shadow-2); padding: 7px; z-index: 600; }
+.gv-menu hr { border: none; border-top: 1px solid var(--gv-border); margin: 6px 0; }
+.gv-menu-item { display: flex; width: 100%; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 600; cursor: pointer; background: none; border: none; color: var(--gv-text); text-align: right; }
+.gv-menu-item:hover { background: var(--gv-glass); }
+.gv-menu-item.danger { color: var(--gv-danger); }
+
+/* ---------------- تب‌بار موبایل ---------------- */
+.gv-tabbar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 500; display: flex; background: color-mix(in srgb, var(--gv-bg) 92%, transparent); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-top: 1px solid var(--gv-border); padding: 6px 8px calc(8px + env(safe-area-inset-bottom)); }
+.gv-tabbar .gv-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 7px 4px; border-radius: 12px; background: none; border: none; color: var(--gv-muted); font-size: 10.5px; font-weight: 700; cursor: pointer; }
+.gv-tabbar .gv-tab span:first-child { font-size: 20px; }
+.gv-tabbar .gv-tab.active { color: var(--gv-primary-2); background: var(--gv-glass); }
+
+@media (max-width: 860px) {
+  .gv-nav-links { display: none; }
+  .gv-page { padding: 16px 14px 100px; }
+}
+@media (min-width: 861px) {
+  .gv-tabbar { display: none; }
+}
+
+/* ---------------- هیروی خانه ---------------- */
+.gv-hero { padding: 30px 26px; display: flex; flex-direction: column; gap: 20px; position: relative; overflow: hidden; }
+.gv-hero::before { content: '🎮'; position: absolute; left: -20px; top: -30px; font-size: 170px; opacity: .06; transform: rotate(-15deg); }
+.gv-hero-hi { color: var(--gv-muted); font-size: 14px; }
+.gv-hero-hi b { color: var(--gv-text); }
+.gv-hero-title { font-size: clamp(22px, 4.5vw, 34px); font-weight: 900; margin: 8px 0 14px; }
+.gv-hero-cursor { animation: gv-blink 1.2s infinite; }
+@keyframes gv-blink { 50% { opacity: .2; } }
+.gv-hero-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.gv-hero-cta { display: flex; gap: 10px; flex-wrap: wrap; }
+.gv-hero-xp { max-width: 420px; }
+
+/* ---------------- بازی ویژه ---------------- */
+.gv-featured { display: flex; gap: 22px; padding: 22px; margin: 22px 0; align-items: center; }
+.gv-featured-cover { width: 130px; height: 130px; border-radius: var(--gv-radius-lg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--gv-shadow-1); }
+.gv-featured-emoji { font-size: 64px; filter: drop-shadow(0 6px 12px rgba(0,0,0,.35)); }
+.gv-featured-info { display: flex; flex-direction: column; gap: 9px; align-items: flex-start; }
+.gv-featured-info h2 { font-size: 24px; font-weight: 900; }
+@media (max-width: 640px) {
+  .gv-featured { flex-direction: column; text-align: center; }
+  .gv-featured-info { align-items: center; }
+}
+
+/* ---------------- کارت بازی ---------------- */
+.gv-game-card { width: 168px; border-radius: var(--gv-radius-lg); overflow: hidden; background: var(--gv-surface); border: 1px solid var(--gv-border); transition: transform .18s ease, box-shadow .18s ease; display: block; }
+.gv-game-card:hover { transform: translateY(-5px); box-shadow: var(--gv-shadow-2), var(--gv-glow); }
+.gv-game-cover { position: relative; height: 118px; display: flex; align-items: center; justify-content: center; }
+.gv-game-emoji { font-size: 52px; filter: drop-shadow(0 5px 10px rgba(0,0,0,.35)); transition: transform .2s; }
+.gv-game-card:hover .gv-game-emoji { transform: scale(1.12) rotate(-4deg); }
+.gv-game-players { position: absolute; top: 9px; right: 9px; font-size: 10.5px; background: rgba(0,0,0,.4); backdrop-filter: blur(4px); }
+.gv-game-play { position: absolute; bottom: 9px; left: 9px; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,.92); color: #111; display: flex; align-items: center; justify-content: center; font-size: 13px; opacity: 0; transform: translateY(6px); transition: all .2s; }
+.gv-game-card:hover .gv-game-play { opacity: 1; transform: none; }
+.gv-game-info { padding: 11px 13px 13px; }
+.gv-game-title { font-weight: 800; font-size: 14.5px; margin-bottom: 5px; }
+.gv-game-meta { display: flex; justify-content: space-between; font-size: 11.5px; }
+.gv-rate { color: var(--gv-accent); font-weight: 800; }
+
+/* ---------------- کشف بازی‌ها ---------------- */
+.gv-filter-bar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.gv-filter-bar .gv-input { flex: 1; min-width: 200px; }
+.gv-filter-bar .gv-select { max-width: 190px; }
+.gv-chips-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+.gv-chips-row::-webkit-scrollbar { display: none; }
+.gv-games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 16px; margin-top: 14px; }
+
+/* ---------------- جزئیات بازی ---------------- */
+.gv-detail-hero { border-radius: var(--gv-radius-lg); border: 1px solid var(--gv-border); padding: 26px; display: flex; gap: 24px; }
+.gv-detail-cover { width: 150px; height: 150px; border-radius: var(--gv-radius-lg); display: flex; align-items: center; justify-content: center; font-size: 72px; flex-shrink: 0; box-shadow: var(--gv-shadow-1); }
+.gv-detail-info { display: flex; flex-direction: column; gap: 11px; align-items: flex-start; flex: 1; }
+.gv-detail-info h1 { font-size: clamp(22px, 4vw, 30px); font-weight: 900; }
+.gv-detail-meta, .gv-detail-cats { display: flex; gap: 7px; flex-wrap: wrap; }
+.gv-detail-desc { line-height: 2; font-size: 14px; color: var(--gv-muted); max-width: 640px; }
+.gv-detail-actions { display: flex; gap: 9px; flex-wrap: wrap; }
+.gv-detail-actions .faved { border-color: rgba(239, 68, 68, .5); color: var(--gv-danger); }
+@media (max-width: 700px) {
+  .gv-detail-hero { flex-direction: column; align-items: center; text-align: center; }
+  .gv-detail-info { align-items: center; }
+  .gv-detail-desc { text-align: justify; }
+}
+
+/* ---------------- آمار مشترک ---------------- */
+.gv-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.gv-stats-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.gv-stat-card { padding: 15px 13px; text-align: center; }
+.gv-stat-value { font-size: 19px; font-weight: 900; }
+.gv-stat-label { font-size: 11.5px; color: var(--gv-muted); margin-top: 5px; }
+@media (max-width: 640px) {
+  .gv-stats-grid, .gv-stats-grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ---------------- کارت دوست-در-حال-بازی ---------------- */
+.gv-friend-play-card { display: flex; align-items: center; gap: 12px; padding: 13px 16px; min-width: 230px; transition: transform .15s; }
+.gv-friend-play-card:hover { transform: translateY(-3px); }
+.gv-friend-game { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
