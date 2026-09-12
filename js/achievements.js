@@ -11,7 +11,7 @@ const LIST = [
   {id:'addict', ic:'fire',   rw:80,  check:e=>e.event==='match:end' && (e.p?.stats.plays>=50)},
   {id:'streak3',ic:'bolt',   rw:40,  check:e=>e.event==='streak' && e.n>=3},
   {id:'streak5',ic:'fire',   rw:70,  check:e=>e.event==='streak' && e.n>=5},
-  {id:'explore',ic:'compass',rw:60,  check:e=>e.event==='match:end' && e.p && Object.keys(e.p.stats.byGame||{}).length>=7},
+  {id:'explore',ic:'compass',rw:60,  check:e=>e.event==='match:end' && e.p && Object.keys(e.p.stats.byGame||{}).length>=10},
   {id:'socialize',ic:'chat', rw:30,  check:e=>e.event==='chat' && (e.p?.stats.msgs>=10)},
   {id:'host',   ic:'flag',   rw:40,  check:e=>e.event==='hosted' && (e.p?.stats.hosted>=1)},
   {id:'online1',ic:'swords', rw:50,  check:e=>e.event==='match:end' && e.mode!=='solo' && e.vsHuman && e.res==='w'},
@@ -62,7 +62,7 @@ function progressOf(a){
     case 'addict': return {cur:s.plays, max:50};
     case 'streak3': return {cur:s.bestWinStreak||0, max:3};
     case 'streak5': return {cur:s.bestWinStreak||0, max:5};
-    case 'explore': return {cur:Object.keys(s.byGame||{}).length, max:7};
+    case 'explore': return {cur:Object.keys(s.byGame||{}).length, max:10};
     case 'socialize': return {cur:s.msgs||0, max:10};
     case 'host': return {cur:s.hosted||0, max:1};
     case 'streak7': return {cur:s.bestDayStreak||0, max:7};

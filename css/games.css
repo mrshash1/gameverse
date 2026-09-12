@@ -206,3 +206,160 @@
 
 /* ---------- turn banner shimmer ---------- */
 .turn-banner.me{background:linear-gradient(110deg,#7c5cff,#9d7bff,#00c9bd,#7c5cff);background-size:280% 100%;animation:gradMove 3.5s linear infinite;border:none}
+
+/* ==================== v4 additions ==================== */
+.btn.warn{background:var(--grad-fire);color:#fff;border-color:transparent;box-shadow:0 6px 16px -6px rgba(255,138,61,.5)}
+
+/* ---------- Risk (فتح سرزمین‌ها) ---------- */
+.riskb{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.rk-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rk-phase{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.rk-seat{--sc:#7c5cff;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;background:var(--surface);border:2px solid var(--border);font-size:.78rem;font-weight:800;transition:all .25s}
+.rk-seat i{font-style:normal;background:var(--surface3);border-radius:99px;padding:0 7px;font-size:.72rem}
+.rk-seat.on{border-color:var(--sc);box-shadow:0 0 0 3px color-mix(in srgb, var(--sc) 25%, transparent);background:color-mix(in srgb, var(--sc) 10%, var(--surface))}
+.rk-seat.dead{opacity:.4;text-decoration:line-through}
+.rk-pnum{margin-inline-start:auto;font-weight:800;color:var(--p1)}
+.rk-deploy{margin-inline-start:auto;background:var(--grad-gold);color:#fff;font-weight:900;padding:5px 14px;border-radius:99px;box-shadow:0 6px 16px -6px rgba(255,176,32,.55);font-size:.85rem}
+.rk-map-wrap{background:linear-gradient(160deg,var(--surface2),var(--surface));border:1.5px solid var(--border);border-radius:var(--r-l);padding:8px;box-shadow:var(--sh-2)}
+.rk-map-wrap svg{width:100%;height:auto;display:block}
+.rk-map-wrap g{transition:opacity .2s}
+.rk-map-wrap g:hover path{filter:brightness(1.08)}
+.rk-actions{justify-content:center;min-height:44px}
+.rk-dice{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:6;pointer-events:none}
+.riskb{position:relative}
+.rk-dice-card{background:var(--glass);backdrop-filter:blur(12px);border:1.5px solid var(--glass-brd);border-radius:var(--r-l);padding:14px 22px;box-shadow:var(--sh-3);animation:popIn .25s cubic-bezier(.2,.7,.3,1.3)}
+.rk-dice-t{font-weight:900;font-size:.85rem;margin-bottom:8px;text-align:center}
+.rk-dice-row{display:flex;gap:22px;justify-content:center}
+.rk-dice-row small{display:block;text-align:center;font-weight:800;color:var(--tx3);font-size:.68rem;margin-bottom:4px}
+.rk-dice-row > div{text-align:center}
+.rk-dice-red{color:#e0313f;display:flex;gap:5px;justify-content:center}
+.rk-dice-blu{color:#2563c9;display:flex;gap:5px;justify-content:center}
+.rk-dice-row b{display:block;margin-top:4px;font-size:.9rem}
+@keyframes popIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* ---------- Crusade (لرد صلیبی) ---------- */
+.csb{position:relative;max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:9px}
+.cs-hud{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cs-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1.5px solid var(--border);border-radius:99px;padding:5px 13px;font-size:.82rem;font-weight:800;box-shadow:var(--sh-1)}
+.cs-chip.gold{background:var(--grad-gold);color:#fff;border:none}
+.cs-chip.cyan{background:var(--grad-cyan);color:#fff;border:none}
+.cs-canvas-wrap{border-radius:var(--r-l);overflow:hidden;border:1.5px solid var(--border);box-shadow:var(--sh-2);background:#87c5f2}
+.cs-canvas-wrap canvas{width:100%;height:auto;display:block;touch-action:none}
+.cs-keeps{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cs-keep{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:8px 12px;font-size:.74rem;font-weight:800}
+.cs-keep span{display:block;color:var(--tx3);font-size:.68rem;margin-bottom:4px}
+.cs-hpb{height:10px;background:var(--surface3);border-radius:99px;overflow:hidden}
+.cs-hpb i{display:block;height:100%;border-radius:99px;transition:width .3s}
+.cs-dock{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch}
+.cs-grp{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:10px 13px;flex:1;min-width:280px}
+.cs-grp-t{font-size:.78rem;font-weight:900;display:block;margin-bottom:8px}
+.cs-grp-t small{font-weight:600}
+.cs-units{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cs-unit{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px;border-radius:13px;background:linear-gradient(180deg,var(--surface2),var(--surface));border:1.5px solid var(--border);transition:all .18s;font-size:.72rem}
+.cs-unit:hover{transform:translateY(-2px);border-color:var(--p1);box-shadow:var(--sh-p)}
+.cs-unit:active{transform:scale(.96)}
+.cs-unit .cs-ui{font-size:1.25rem;line-height:1}
+.cs-unit b{font-weight:900}
+.cs-unit .cs-cost{color:var(--warn);font-weight:800;font-size:.68rem}
+.cs-banner{position:absolute;top:64px;left:50%;transform:translateX(-50%);background:var(--grad-fire);color:#fff;font-weight:900;padding:9px 26px;border-radius:99px;box-shadow:0 12px 30px -8px rgba(255,92,77,.65);animation:popIn .3s;z-index:5;white-space:nowrap}
+@media (max-width:640px){ .cs-units{grid-template-columns:repeat(2,1fr)} }
+
+/* ---------- Voxel (مکعب‌کره) ---------- */
+.vxb{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:9px}
+.vx-wrap{position:relative;height:min(62vh,520px);border-radius:var(--r-l);overflow:hidden;border:1.5px solid var(--border);box-shadow:var(--sh-2);background:#87c5f2;touch-action:none}
+.vx-wrap canvas{width:100%;height:100%;display:block;cursor:crosshair}
+.vx-cross{position:absolute;top:50%;left:50%;width:22px;height:22px;transform:translate(-50%,-50%);pointer-events:none;opacity:.85}
+.vx-cross::before,.vx-cross::after{content:'';position:absolute;background:#fff;box-shadow:0 0 4px rgba(0,0,0,.7)}
+.vx-cross::before{left:50%;top:2px;bottom:2px;width:2.5px;margin-left:-1.25px;border-radius:2px}
+.vx-cross::after{top:50%;left:2px;right:2px;height:2.5px;margin-top:-1.25px;border-radius:2px}
+.vx-locked{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(20,24,50,.45);backdrop-filter:blur(7px);z-index:8;transition:opacity .3s;padding:16px}
+.vx-locked.off{opacity:0;pointer-events:none}
+.vx-lock-card{background:var(--glass);border:1.5px solid var(--glass-brd);border-radius:var(--r-l);padding:22px 30px;box-shadow:var(--sh-3);display:flex;flex-direction:column;gap:10px;min-width:250px}
+.vx-lock-card b{font-size:1.05rem}
+.vx-bar{display:flex;flex-direction:column;gap:8px}
+.vx-hot{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.vx-slot{position:relative;width:52px;height:52px;border-radius:13px;border:2.5px solid var(--border);background:var(--surface);padding:6px;transition:all .18s}
+.vx-slot span{display:block;width:100%;height:100%;border-radius:8px;box-shadow:inset 0 -4px 8px rgba(0,0,0,.22),inset 0 3px 6px rgba(255,255,255,.3)}
+.vx-slot em{position:absolute;top:-7px;inset-inline-start:-6px;font-style:normal;font-size:.6rem;font-weight:900;background:var(--surface3);border-radius:99px;padding:1px 5px;color:var(--tx2)}
+.vx-slot.on{border-color:var(--p1);box-shadow:0 0 0 3px rgba(124,92,255,.25),var(--sh-p);transform:translateY(-3px)}
+.vx-joy{position:absolute;bottom:18px;inset-inline-start:18px;width:104px;height:104px;border-radius:50%;background:rgba(255,255,255,.16);border:2px solid rgba(255,255,255,.4);z-index:6;transition:transform .08s}
+.vx-joy i{position:absolute;top:50%;left:50%;width:44px;height:44px;margin:-22px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 4px 12px rgba(0,0,0,.3)}
+@media (max-width:640px){ .vx-slot{width:42px;height:42px;padding:5px} }
+
+/* ==================== v4 additions ==================== */
+.btn.warn{background:var(--grad-fire);color:#fff;border-color:transparent;box-shadow:0 6px 16px -6px rgba(255,138,61,.5)}
+
+/* ---------- Risk (فتح سرزمین‌ها) ---------- */
+.riskb{position:relative;max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.rk-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rk-phase{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.rk-seat{--sc:#7c5cff;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;background:var(--surface);border:2px solid var(--border);font-size:.78rem;font-weight:800;transition:all .25s}
+.rk-seat i{font-style:normal;background:var(--surface3);border-radius:99px;padding:0 7px;font-size:.72rem}
+.rk-seat.on{border-color:var(--sc);box-shadow:0 0 0 3px color-mix(in srgb, var(--sc) 25%, transparent);background:color-mix(in srgb, var(--sc) 10%, var(--surface))}
+.rk-seat.dead{opacity:.4;text-decoration:line-through}
+.rk-pnum{margin-inline-start:auto;font-weight:800;color:var(--p1)}
+.rk-deploy{margin-inline-start:auto;background:var(--grad-gold);color:#fff;font-weight:900;padding:5px 14px;border-radius:99px;box-shadow:0 6px 16px -6px rgba(255,176,32,.55);font-size:.85rem}
+.rk-map-wrap{background:linear-gradient(160deg,var(--surface2),var(--surface));border:1.5px solid var(--border);border-radius:var(--r-l);padding:8px;box-shadow:var(--sh-2)}
+.rk-map-wrap svg{width:100%;height:auto;display:block}
+.rk-map-wrap g{transition:opacity .2s}
+.rk-map-wrap g:hover path{filter:brightness(1.08)}
+.rk-actions{justify-content:center;min-height:44px}
+.rk-dice{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:6;pointer-events:none}
+.rk-dice-card{background:var(--glass);backdrop-filter:blur(12px);border:1.5px solid var(--glass-brd);border-radius:var(--r-l);padding:14px 22px;box-shadow:var(--sh-3);animation:popIn .25s cubic-bezier(.2,.7,.3,1.3)}
+.rk-dice-t{font-weight:900;font-size:.85rem;margin-bottom:8px;text-align:center}
+.rk-dice-row{display:flex;gap:22px;justify-content:center}
+.rk-dice-row small{display:block;text-align:center;font-weight:800;color:var(--tx3);font-size:.68rem;margin-bottom:4px}
+.rk-dice-row > div{text-align:center}
+.rk-dice-red{color:#e0313f;display:flex;gap:5px;justify-content:center}
+.rk-dice-blu{color:#2563c9;display:flex;gap:5px;justify-content:center}
+.rk-dice-row b{display:block;margin-top:4px;font-size:.9rem}
+@keyframes popIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* ---------- Crusade (لرد صلیبی) ---------- */
+.csb{position:relative;max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:9px}
+.cs-hud{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cs-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1.5px solid var(--border);border-radius:99px;padding:5px 13px;font-size:.82rem;font-weight:800;box-shadow:var(--sh-1)}
+.cs-chip.gold{background:var(--grad-gold);color:#fff;border:none}
+.cs-chip.cyan{background:var(--grad-cyan);color:#fff;border:none}
+.cs-canvas-wrap{border-radius:var(--r-l);overflow:hidden;border:1.5px solid var(--border);box-shadow:var(--sh-2);background:#87c5f2}
+.cs-canvas-wrap canvas{width:100%;height:auto;display:block;touch-action:none}
+.cs-keeps{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cs-keep{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:8px 12px;font-size:.74rem;font-weight:800}
+.cs-keep span{display:block;color:var(--tx3);font-size:.68rem;margin-bottom:4px}
+.cs-hpb{height:10px;background:var(--surface3);border-radius:99px;overflow:hidden}
+.cs-hpb i{display:block;height:100%;border-radius:99px;transition:width .3s}
+.cs-dock{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch}
+.cs-grp{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:10px 13px;flex:1;min-width:280px}
+.cs-grp-t{font-size:.78rem;font-weight:900;display:block;margin-bottom:8px}
+.cs-grp-t small{font-weight:600}
+.cs-units{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cs-unit{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px;border-radius:13px;background:linear-gradient(180deg,var(--surface2),var(--surface));border:1.5px solid var(--border);transition:all .18s;font-size:.72rem}
+.cs-unit:hover{transform:translateY(-2px);border-color:var(--p1);box-shadow:var(--sh-p)}
+.cs-unit:active{transform:scale(.96)}
+.cs-unit .cs-ui{font-size:1.25rem;line-height:1}
+.cs-unit b{font-weight:900}
+.cs-unit .cs-cost{color:var(--warn);font-weight:800;font-size:.68rem}
+.cs-banner{position:absolute;top:64px;left:50%;transform:translateX(-50%);background:var(--grad-fire);color:#fff;font-weight:900;padding:9px 26px;border-radius:99px;box-shadow:0 12px 30px -8px rgba(255,92,77,.65);animation:popIn .3s;z-index:5;white-space:nowrap}
+@media (max-width:640px){ .cs-units{grid-template-columns:repeat(2,1fr)} }
+
+/* ---------- Voxel (مکعب‌کره) ---------- */
+.vxb{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:9px}
+.vx-wrap{position:relative;height:min(62vh,520px);border-radius:var(--r-l);overflow:hidden;border:1.5px solid var(--border);box-shadow:var(--sh-2);background:#87c5f2;touch-action:none}
+.vx-wrap canvas{width:100%;height:100%;display:block;cursor:crosshair}
+.vx-cross{position:absolute;top:50%;left:50%;width:22px;height:22px;transform:translate(-50%,-50%);pointer-events:none;opacity:.85}
+.vx-cross::before,.vx-cross::after{content:'';position:absolute;background:#fff;box-shadow:0 0 4px rgba(0,0,0,.7)}
+.vx-cross::before{left:50%;top:2px;bottom:2px;width:2.5px;margin-left:-1.25px;border-radius:2px}
+.vx-cross::after{top:50%;left:2px;right:2px;height:2.5px;margin-top:-1.25px;border-radius:2px}
+.vx-locked{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(20,24,50,.45);backdrop-filter:blur(7px);z-index:8;transition:opacity .3s;padding:16px}
+.vx-locked.off{opacity:0;pointer-events:none}
+.vx-lock-card{background:var(--glass);border:1.5px solid var(--glass-brd);border-radius:var(--r-l);padding:22px 30px;box-shadow:var(--sh-3);display:flex;flex-direction:column;gap:10px;min-width:250px}
+.vx-lock-card b{font-size:1.05rem}
+.vx-bar{display:flex;flex-direction:column;gap:8px}
+.vx-hot{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.vx-slot{position:relative;width:52px;height:52px;border-radius:13px;border:2.5px solid var(--border);background:var(--surface);padding:6px;transition:all .18s}
+.vx-slot span{display:block;width:100%;height:100%;border-radius:8px;box-shadow:inset 0 -4px 8px rgba(0,0,0,.22),inset 0 3px 6px rgba(255,255,255,.3)}
+.vx-slot em{position:absolute;top:-7px;inset-inline-start:-6px;font-style:normal;font-size:.6rem;font-weight:900;background:var(--surface3);border-radius:99px;padding:1px 5px;color:var(--tx2)}
+.vx-slot.on{border-color:var(--p1);box-shadow:0 0 0 3px rgba(124,92,255,.25),var(--sh-p);transform:translateY(-3px)}
+.vx-joy{position:absolute;bottom:18px;inset-inline-start:18px;width:104px;height:104px;border-radius:50%;background:rgba(255,255,255,.16);border:2px solid rgba(255,255,255,.4);z-index:6;transition:transform .08s}
+.vx-joy i{position:absolute;top:50%;left:50%;width:44px;height:44px;margin:-22px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 4px 12px rgba(0,0,0,.3)}
+@media (max-width:640px){ .vx-slot{width:42px;height:42px;padding:5px} }

@@ -11,7 +11,8 @@ const games = new Map();       // id → meta
 const factories = new Map();   // id → factory fn
 const loadedScripts = new Set();
 
-const BASE_CATS = ['board','classic','party','brain','speed','word','luck','family'];
+const BASE_CATS = ['board','classic','party','brain','speed','word','luck','family','strategy','sandbox'];
+PV.ver = '4.0.0';
 
 function register(meta){
   const existing = meta.id ? games.get(meta.id) : null;
@@ -37,12 +38,15 @@ function register(meta){
   {id:'quiz',      cats:['brain','family','party'],   players:[1,8], weight:80},
   {id:'reaction',  cats:['speed','party'],            players:[1,8], weight:76},
   {id:'word',      cats:['word','brain'],             players:[1,2], weight:72},
+  {id:'risk',      cats:['strategy','board','classic'], players:[2,4], weight:86},
+  {id:'crusade',   cats:['strategy','classic'],       players:[1,1], weight:82},
+  {id:'voxel',     cats:['sandbox','strategy','family'], players:[1,1], weight:78},
 ].forEach(register);
 function loadFactory(id){
   return factories.get(id) || null;
 }
 /* lazy-load game module from games/<id>/game.js (cache-busted so deploys go live instantly) */
-const PV_VERSION = '3.0.1';
+const PV_VERSION = '4.1.0';
 function ensureLoaded(id){
   return new Promise((res, rej)=>{
     if(factories.has(id) || loadedScripts.has(id)) return res(factories.get(id)||null);

@@ -25,19 +25,23 @@ async function render(view, m){
       <h1>${esc(PV.t('g.'+id))}</h1>
       <p class="muted">${esc(PV.t('g.'+id+'.d'))}</p>
       <div class="mode-grid">
+        ${g.modes.includes('solo')?`
         <div class="mode-card c2" id="m-bot">
           <div class="mic2">${icon('user',22)}</div>
           <b>${t('gd.solo')}</b><span>${t('gd.soloD')}</span>
-        </div>
+        </div>`:''}
+        ${g.modes.includes('online')?`
         <div class="mode-card" id="m-online">
           <div class="mic2">${icon('wifi',22)}</div>
           <b>${t('gd.online')}</b><span>${t('gd.onlineD')}</span>
-        </div>
+        </div>`:''}
+        ${g.modes.includes('solo')?`
         <div class="mode-card c3" id="m-quick">
           <div class="mic2">${icon('zap',22)}</div>
           <b>${t('home.quick')}</b><span>${t('mm.sub')}</span>
-        </div>
+        </div>`:''}
       </div>
+      ${g.modes.includes('solo')?`
       <div class="card mt-2" style="padding:14px 16px">
         <div class="row wrap" style="gap:14px">
           <span class="small" style="font-weight:800">${t('gd.diff')}:</span>
@@ -47,7 +51,7 @@ async function render(view, m){
             <button data-d="hard" class="${diff==='hard'?'on':''}">${t('gd.hard')}</button>
           </div>
         </div>
-      </div>
+      </div>`:''}
     </div>
   </div>
 
@@ -72,13 +76,13 @@ async function render(view, m){
     U.LS.set('diff:'+id, b.dataset.d);
     view.querySelectorAll('#diffseg button').forEach(x=>x.classList.toggle('on', x===b));
   });
-  view.querySelector('#m-bot').onclick = ()=> PV.sdk.launch({gameId:id, mode:'solo', diff: U.LS.get('diff:'+id,'normal')});
-  view.querySelector('#m-quick').onclick = ()=> PV.homeQuick.quickPlay ? PV.homeQuick.quickPlay() : PV.sdk.launch({gameId:id, mode:'solo'});
-  view.querySelector('#m-online').onclick = ()=>{
+  view.querySelector('#m-bot') && (view.querySelector('#m-bot').onclick = ()=> PV.sdk.launch({gameId:id, mode:'solo', diff: U.LS.get('diff:'+id,'normal')}));
+  view.querySelector('#m-quick') && (view.querySelector('#m-quick').onclick = ()=> PV.homeQuick.quickPlay ? PV.homeQuick.quickPlay() : PV.sdk.launch({gameId:id, mode:'solo'}));
+  view.querySelector('#m-online') && (view.querySelector('#m-online').onclick = ()=>{
     /* go to room with game preselected */
     sessionStorage.setItem('pv:presetGame', id);
     location.hash = '#/room';
-  };
+  });
 
   /* leaderboard async */
   PV.cloud.topScores(id).then(rows=>{

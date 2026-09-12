@@ -33,6 +33,14 @@ async function render(){
   for(const r of routes){ m = hash.match(r.re); if(m){ matched = r; break; } }
   const id = matched?.id || 'home';
   currentRoute = hash;
+  /* stale-match guard: navigating anywhere except the live match's own play
+     route tears the match down (fixes old game DOM leaking into new pages) */
+  const live = PV.sdk && PV.sdk.current;
+  if(live){
+    const sameRoute = matched?.id==='play' && m && m[1]===live.ctx.gameId;
+    const launchingThis = matched?.id==='play' && m && PV.sdk.launching && m[1]===PV.sdk.launching;
+    if(!sameRoute && !launchingThis) PV.sdk.destroy();
+  }
   PV.router.current = hash;
   const screen = PV.screens[id] || PV.screens.home;
   view.innerHTML = `<div style="display:flex;justify-content:center;padding:60px 0"><div class="spinner" style="width:34px;height:34px"></div></div>`;

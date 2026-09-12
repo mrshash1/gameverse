@@ -6,9 +6,13 @@ const { esc, icon, fmt, avatarHtml } = U;
 
 async function render(view, m){
   const gid = m[1];
-  let sdk = PV.sdk.current;
+  /* a live match of a DIFFERENT game (or an in-flight launch of one) must die
+     before this game's shell mounts — otherwise the old game's DOM is injected
+     into this shell and this game never launches (quick-switch bug) */
+  const live0 = PV.sdk.current, launching0 = PV.sdk.launching;
+  if(launching0!==gid && (live0 || launching0)) PV.sdk.destroy();
   const busy = PV.sdk.launching===gid;
-  if(!sdk && !busy){
+  if(!PV.sdk.current && !busy){
     /* direct deep-link to a play url without options → solo */
     PV.sdk.launch({gameId:gid, mode:'solo'});
   }
@@ -46,12 +50,16 @@ async function render(view, m){
     </div>
   </div>`;
 
-  /* wait for the launching match to attach (shell above is already mounted) */
+  /* wait for THIS game's match to attach. Must poll on the match itself, NOT on
+     the launching flag: launch() parks at its first await (script load microtask)
+     BEFORE setting the flag, so a flag-only check exits early and the shell would
+     wire itself to the stub ctx (empty score strip / player list). */
   let iter = 0;
-  while(!PV.sdk.current && PV.sdk.launching===gid && iter++<120) await U.sleep(40);
-  sdk = PV.sdk.current;
-  const ctx = sdk? sdk.ctx : {gameId:gid, meta:PV.registry.get(gid), mode:'solo', players:[], room:null, selfPid:PV.net.selfId};
-  const ctrl = sdk?.ctrl || null;
+  while(iter++<150 && PV.sdk.current?.ctx?.gameId!==gid) await U.sleep(40);
+  const sdk = PV.sdk.current;
+  const sdkOk = !!(sdk && sdk.ctx.gameId===gid);   /* never mount another game's match */
+  const ctx = sdkOk? sdk.ctx : {gameId:gid, meta:PV.registry.get(gid), mode:'solo', players:[], room:null, selfPid:PV.net.selfId};
+  const ctrl = sdkOk? (sdk.ctrl||null) : null;
   const g = ctx.meta;
   const p = PV.store.me();
 
@@ -93,9 +101,10 @@ async function render(view, m){
     const strip = view.querySelector('#pl-scores');
     if(list.length<=2){
       const me = list.find(x=>x.pid===PV.net.selfId) || list[0];
-      const op = list.find(x=>x.pid!==me?.pid);
+      const op = list.find(x=>x.pid && x.pid!==me?.pid) || (list.length===1? {name:'🤖 '+t('g.bot')} : undefined);
+      const myScore = scores[me?.pid] ?? scores[ctx.selfPid] ?? 0;   /* solo entries use pid:'me' while games key scores by selfPid */
       strip.innerHTML = `
-        <span class="sc">${me? avatarHtml(me,40):''}<b>${esc(me?.name||'—')}</b><b class="num" style="color:var(--p1)">${fmt(scores[me?.pid]??0)}</b></span>
+        <span class="sc">${me? avatarHtml(me,40):''}<b>${esc(me?.name||t('c.you'))}</b><b class="num" style="color:var(--p1)">${fmt(myScore)}</b></span>
         <span class="vs">VS</span>
         <span class="sc">${op? avatarHtml(op,40):''}<b>${esc(op?.name||'—')}</b><b class="num" style="color:var(--p4)">${fmt(scores[op?.pid]??0)}</b></span>`;
     } else {

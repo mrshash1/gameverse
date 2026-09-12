@@ -32,15 +32,22 @@ async function render(view){
   const $au = view.querySelector('#au'), $an = view.querySelector('#an'), $ap = view.querySelector('#ap');
   const $hint = view.querySelector('#hint'), $go = view.querySelector('#go'), $note = view.querySelector('#cloudnote');
 
-  /* cloud status */
-  PV.cloud.ensure().then(ok=>{
-    if(ok && !PV.store.settings.endpoint){ $note.innerHTML = icon('wifi',17)+`<span>${t('au.cloudOn')}</span>`; }
-  });
-  /* also consider auto-created jsonblob */
-  setTimeout(async ()=>{
-    const info = await PV.cloud.worldInfo();
-    if(info.state==='ok') $note.innerHTML = icon('wifi',17)+`<span>${t('au.cloudOn')}</span>`;
-  }, 600);
+  /* server / cloud status */
+  if(PV.sapi && PV.sapi.configured()){
+    PV.sapi.probe(true).then(ok=>{
+      $note.innerHTML = icon('wifi',17)+`<span>${ok? t('au.svOn') : t('sv.fail')}</span>`;
+      $note.style.color = ok? 'var(--ok)':'';
+    });
+  } else {
+    PV.cloud.ensure().then(ok=>{
+      if(ok && !PV.store.settings.endpoint){ $note.innerHTML = icon('wifi',17)+`<span>${t('au.cloudOn')}</span>`; }
+    });
+    /* also consider auto-created jsonblob */
+    setTimeout(async ()=>{
+      const info = await PV.cloud.worldInfo();
+      if(info.state==='ok') $note.innerHTML = icon('wifi',17)+`<span>${t('au.cloudOn')}</span>`;
+    }, 600);
+  }
 
   view.querySelector('#tab-in').onclick = ()=> setMode('in');
   view.querySelector('#tab-up').onclick = ()=> setMode('up');
@@ -68,7 +75,7 @@ async function render(view){
         else { PV.ui.toast(t('au.made'),'ok','check'); if(r.localOnly) PV.ui.toast(t('au.cloudOff'),'info'); done(); }
       } else {
         const r = await PV.cloud.login(u, pw);
-        if(!r.ok){ PV.ui.toast(r.why==='nf'? t('au.nf') : t('au.badPw'),'err'); }
+        if(!r.ok){ PV.ui.toast(r.why==='nf'? t('au.nf') : r.why==='banned'? t('au.banned') : t('au.badPw'),'err'); }
         else { PV.ui.toast(t('au.done')+'، '+(PV.store.me()?.name||u)+' 👋','ok','check'); done(); }
       }
     } finally { $go.disabled=false; $go.textContent = mode==='up'? t('au.up'):t('au.in'); }

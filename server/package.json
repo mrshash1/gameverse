@@ -1,0 +1,17 @@
+{
+  "name": "playverse-server",
+  "version": "1.0.0",
+  "description": "PlayVerse real backend — accounts, profiles, leaderboards, friends, admin",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.17.0"
+  }
+}

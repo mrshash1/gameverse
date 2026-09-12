@@ -97,6 +97,38 @@ function thumbSvg(id){
       <text x="103" y="39" font-size="17" font-weight="900" text-anchor="middle" fill="#ff5c9d">ا</text>
       <rect x="30" y="66" width="26" height="26" rx="7" fill="#22c55e"/><rect x="60" y="64" width="26" height="26" rx="7" fill="#ffb020"/><rect x="90" y="66" width="26" height="26" rx="7" fill="#3d2b63" opacity=".4"/>
       <circle cx="170" cy="30" r="16" fill="#fff" opacity=".9"/><text x="170" y="37" font-size="19" font-weight="900" text-anchor="middle" fill="#7c5cff">؟</text></g>`,
+    risk: `<g transform="translate(44 16)">
+      <ellipse cx="96" cy="76" rx="88" ry="62" fill="rgba(255,255,255,.16)"/>
+      <g stroke="rgba(255,255,255,.35)" stroke-width="2">
+        <path d="M52 36 L84 22 L118 34 L150 24 L182 40 L176 72 L186 100 L150 118 L112 108 L74 122 L44 100 L56 70 Z" fill="rgba(255,255,255,.22)"/>
+        <line x1="118" y1="34" x2="112" y2="108"/><line x1="56" y1="70" x2="186" y2="100"/></g>
+      <g>
+        <circle cx="80" cy="56" r="15" fill="#ff5c4d"/><text x="80" y="62" font-size="16" font-weight="900" text-anchor="middle" fill="#fff">۸</text>
+        <circle cx="146" cy="46" r="13" fill="#3ba9ff"/><text x="146" y="51" font-size="14" font-weight="900" text-anchor="middle" fill="#fff">۵</text>
+        <circle cx="112" cy="96" r="14" fill="#ffb020"/><text x="112" y="101" font-size="14" font-weight="900" text-anchor="middle" fill="#fff">۶</text>
+        <circle cx="172" cy="88" r="10" fill="#22c55e"/><text x="172" y="92" font-size="12" font-weight="900" text-anchor="middle" fill="#fff">۳</text></g>
+      <g transform="translate(150 8) rotate(18)"><rect x="0" y="0" width="26" height="26" rx="6" fill="#fff"/><circle cx="8" cy="8" r="2.6" fill="#7c5cff"/><circle cx="18" cy="8" r="2.6" fill="#7c5cff"/><circle cx="8" cy="18" r="2.6" fill="#7c5cff"/><circle cx="18" cy="18" r="2.6" fill="#7c5cff"/></g></g>`,
+    crusade: `<g transform="translate(42 22)">
+      <path d="M20 118 L20 66 L20 44 L44 20 L68 44 L68 118 Z" fill="#e8e4d8" stroke="#b9b2a0" stroke-width="3"/>
+      <path d="M20 66 L44 52 L68 66" fill="none" stroke="#b9b2a0" stroke-width="3"/>
+      <rect x="34" y="30" width="20" height="26" rx="10" fill="#5c4a32"/><rect x="30" y="12" width="28" height="12" rx="3" fill="#c8412f"/>
+      <path d="M12 20 L12 2 L18 8 L24 2 L30 8 L36 2 L36 20 Z" fill="#c8412f" transform="translate(5 -2)"/>
+      <path d="M92 118 L92 78 L120 62 L148 78 L148 118 Z" fill="#d9d2c2" stroke="#a89f8a" stroke-width="3"/>
+      <rect x="108" y="88" width="24" height="30" rx="12" fill="#5c4a32"/>
+      <path d="M160 118 L160 70 L176 54 L192 70 L192 118 Z" fill="#e8e4d8" stroke="#b9b2a0" stroke-width="3"/>
+      <circle cx="176" cy="76" r="6" fill="#5c4a32"/>
+      <g fill="#31225c"><circle cx="96" cy="96" r="9" fill="#3b6fd4"/><circle cx="118" cy="92" r="9" fill="#3b6fd4"/></g>
+      <path d="M196 30 Q216 24 224 12 M196 30 Q212 34 226 30" stroke="#ffd93d" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <circle cx="196" cy="30" r="7" fill="#ffb020"/></g>`,
+    voxel: `<g transform="translate(46 20)">
+      <path d="M90 6 L160 40 L160 108 L90 142 L20 108 L20 40 Z" fill="rgba(255,255,255,.18)"/>
+      <g>
+        <path d="M90 18 L146 44 L90 70 L34 44 Z" fill="#7ec850"/><path d="M34 44 L90 70 L90 128 L34 102 Z" fill="#8a5a36"/><path d="M146 44 L146 102 L90 128 L90 70 Z" fill="#6d4527"/>
+        <path d="M90 18 L146 44 L90 70 L34 44 Z" fill="#8fe060" opacity=".55"/></g>
+      <g transform="translate(28 66)"><path d="M22 0 L44 10 L44 32 L22 42 L0 32 L0 10 Z" fill="#9fb6c9"/><path d="M0 10 L22 20 L22 42 L0 32 Z" fill="#7d93a6"/></g>
+      <g transform="translate(128 74)"><path d="M18 0 L36 9 L36 27 L18 36 L0 27 L0 9 Z" fill="#8b6cff"/><path d="M0 9 L18 18 L18 36 L0 27 Z" fill="#6d4dff"/></g>
+      <g transform="translate(64 96)" fill="#ffd93d"><rect x="0" y="0" width="12" height="12" rx="2"/><rect x="16" y="0" width="12" height="12" rx="2"/><rect x="8" y="-14" width="12" height="12" rx="2"/></g>
+      <circle cx="170" cy="22" r="10" fill="#fff" opacity=".85"/><circle cx="206" cy="44" r="6" fill="#fff" opacity=".6"/></g>`,
   };
   function gr(id){
     const maps = {
@@ -107,6 +139,9 @@ function thumbSvg(id){
       reaction:'<stop offset="0" stop-color="#6d4dff"/><stop offset="1" stop-color="#00b8ac"/>',
       connect4:'<stop offset="0" stop-color="#3ba9ff"/><stop offset="1" stop-color="#7c5cff"/>',
       word:'<stop offset="0" stop-color="#22c55e"/><stop offset="1" stop-color="#0e9f8a"/>',
+      risk:'<stop offset="0" stop-color="#b44dff"/><stop offset="1" stop-color="#6d4dff"/>',
+      crusade:'<stop offset="0" stop-color="#d97706"/><stop offset="1" stop-color="#b91c1c"/>',
+      voxel:'<stop offset="0" stop-color="#38bdf8"/><stop offset="1" stop-color="#34d399"/>',
     };
     return maps[id]||maps.tictactoe;
   }
@@ -169,6 +204,13 @@ const PATHS = {
   flag:'<path d="M6 21V4M6 5c4-2.5 8 2.5 12 0v9c-4 2.5-8-2.5-12 0"/>',
   info:'<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 7.8v.4"/>',
   calendar:'<rect x="4" y="6" width="16" height="14.5" rx="2.5"/><path d="M4 10.5h16M8.5 4v4M15.5 4v4"/>',
+  map:'<path d="M9 4.5 3.5 6.5v13L9 17.5l6 2 5.5-2v-13L15 6.5z"/><path d="M9 4.5v13M15 6.5v13"/>',
+  castle:'<path d="M5 20V9l-1.5-1V5h2v2h2V5h2v2h2V5h2v2h2V5h2v3L17 9v11"/><path d="M10 20v-4.5a2 2 0 0 1 4 0V20"/><path d="M3.5 20h17"/>',
+  cube:'<path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m12 3 8 4.5-8 4.5-8-4.5z"/><path d="M12 12v9"/>',
+  pick:'<path d="m13 8 3 3-9.5 9.5a2.1 2.1 0 0 1-3-3z"/><path d="M14.5 6.5C16.5 4.5 19 4 21.5 4.5 21 7 20.5 9.5 18.5 11.5M14.5 6.5l3 3"/>',
+  hammer:'<path d="m10.5 7.5 6 6M14 4l6 6-2.5 2.5-6-6z"/><path d="m11.5 9.5-7 7a2 2 0 0 0 2.8 2.8l7-7"/>',
+  bow:'<path d="M5 19 19 5M5 19c-1-4 0-9 3-13 4-3 9-4 13-3-1 4-2 9-5 12s-8 5-11 4z"/><path d="M8.5 15.5 5 19l3.5.5.5 3.5"/>',
+  shield2:'<path d="M12 3.5 19 6v5.5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M12 8v5M9.5 10.5h5"/>',
 };
 function icon(name, size=22, sw=1.9){
   const p = PATHS[name]||PATHS.star;

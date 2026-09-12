@@ -122,6 +122,7 @@ async function mutate(fn, tries=3){
 /* ---- debounced profile push ---- */
 const pushProfileSoon = U.debounce(async ()=>{
   const p = PV.store.me(); if(!p || PV.store.isGuest()) return;
+  if(PV.sapi && PV.sapi.configured() && PV.sapi.hasToken()){ if(await PV.sapi.probe()){ PV.sapi.pushProfile(); return; } }
   await ensure();
   if(state!=='ok') return;
   await mutate(w=>{
@@ -145,6 +146,26 @@ async function ensure(){
 /* ---- auth ---- */
 async function register(u, name, pw){
   u = (u||'').trim().toLowerCase();
+  /* ---------- REAL SERVER first: accounts live on the server ---------- */
+  if(PV.sapi && PV.sapi.configured()){
+    const up = await PV.sapi.probe(true);
+    if(up){
+      try{
+        const sp = await PV.sapi.register(u, name, pw);
+        const prof = PV.store.blankProfile(u, (sp&&sp.name)||name);
+        prof.cloud = true; prof.svAdmin = !!(sp&&sp.admin);
+        PV.store.saveProfile(prof);
+        PV.store.login(u, prof.name);
+        PV.sapi.pushProfile();
+        setTimeout(()=>syncFromCloudSoon(), 600);
+        return {ok:true, server:true};
+      }catch(e){
+        if(e && (e.why==='taken')) return {ok:false, why:'taken'};
+        if(e && (e.why==='user'||e.why==='pw'||e.why==='rate')) return {ok:false, why:'sv'};
+        /* server unreachable → fall through to local */
+      }
+    }
+  }
   const salt = randomSalt();
   const ph = await sha256hex(salt+'::'+pw);
   // local first
@@ -172,6 +193,37 @@ async function register(u, name, pw){
 
 async function login(u, pw){
   u = (u||'').trim().toLowerCase();
+  /* ---------- REAL SERVER first ---------- */
+  if(PV.sapi && PV.sapi.configured()){
+    const up = await PV.sapi.probe(true);
+    if(up){
+      try{
+        const sp = await PV.sapi.login(u, pw);
+        const prof = PV.store.loadProfile(u) || PV.store.blankProfile(u, (sp&&sp.name)||u);
+        prof.u = u; prof.cloud = true; prof.svAdmin = !!(sp&&sp.admin);
+        prof.xp = Math.max(prof.xp||0, (sp&&sp.xp)||0);
+        prof.coins = Math.max(prof.coins||0, (sp&&sp.coins)||0);
+        if(sp){
+          prof.badges = [...new Set([...(prof.badges||[]), ...(sp.badges||[])])];
+          for(const [k,v] of Object.entries(sp.stats||{})){
+            if(typeof v==='object') prof.stats[k] = Object.assign({}, prof.stats[k]||{}, v);
+            else if(typeof v==='number') prof.stats[k] = Math.max(prof.stats[k]||0, v);
+          }
+          prof.ratings = Object.assign({}, sp.ratings||{}, prof.ratings||{});
+          if((sp.friends||[]).length > (prof.friends||[]).length) prof.friends = sp.friends;
+        }
+        PV.store.saveProfile(prof);
+        PV.store.login(u, prof.name);
+        setTimeout(()=>syncFromCloudSoon(), 500);
+        return {ok:true, server:true};
+      }catch(e){
+        if(e && (e.why==='nf')) return {ok:false, why:'nf'};
+        if(e && (e.why==='pw')) return {ok:false, why:'pw'};
+        if(e && (e.why==='banned')) return {ok:false, why:'banned'};
+        /* server unreachable → local fallback */
+      }
+    }
+  }
   // local check first (instant + offline)
   const lp = PV.store.loadProfile(u);
   if(lp && lp.ph){
@@ -212,6 +264,25 @@ async function login(u, pw){
 
 const syncFromCloudSoon = U.debounce(async ()=>{
   if(PV.store.isGuest() || !PV.store.session) return;
+  /* REAL SERVER sync (profile + server inbox → notifications) */
+  if(PV.sapi && PV.sapi.configured() && PV.sapi.hasToken()){
+    if(await PV.sapi.probe()){
+      await PV.sapi.syncIntoLocal();
+      const msgs = await PV.sapi.inbox();
+      const p2 = PV.store.me();
+      if(msgs && msgs.length && p2){
+        const notifs = LS.get('notifs:'+p2.u, []);
+        const known = new Set(notifs.map(n=>n.id));
+        for(const m of msgs){
+          if(known.has(m.id)) continue;
+          notifs.unshift({id:m.id, type:m.type==='req'?'req':'sys', txt:m.txt||(m.name+' تو را به دوستی دعوت کرد'), from:m.name||m.from, ts:m.ts, read:false});
+        }
+        LS.set('notifs:'+p2.u, notifs.slice(0,60));
+        document.dispatchEvent(new CustomEvent('pv:notif'));
+      }
+      return;
+    }
+  }
   await ensure();
   if(state!=='ok') return;
   const key = PV.store.session.u.toLowerCase();
@@ -244,8 +315,14 @@ const syncFromCloudSoon = U.debounce(async ()=>{
   }
 }, 1500);
 
-/* friend requests via cloud inbox */
+/* friend requests via REAL SERVER or cloud inbox */
 async function sendFriendReq(fromP, toU){
+  if(PV.sapi && PV.sapi.configured() && PV.sapi.hasToken()){
+    if(await PV.sapi.probe()){
+      try{ await PV.sapi.friendReq(toU); return true; }
+      catch(e){ if(e && (e.why==='nf')) return false; return false; }
+    }
+  }
   await ensure();
   if(state!=='ok') return false;
   const ok = await mutate(w=>{
@@ -259,6 +336,11 @@ async function sendFriendReq(fromP, toU){
   return !!ok || state==='ok';
 }
 async function cloudFriendsBoth(me, other){ /* used on accept: write both friends lists */
+  if(PV.sapi && PV.sapi.configured() && PV.sapi.hasToken()){
+    if(await PV.sapi.probe()){
+      try{ await PV.sapi.friendAcc(other); }catch(e){}
+    }
+  }
   await ensure();
   if(state!=='ok') return false;
   await mutate(w=>{
@@ -275,6 +357,7 @@ async function cloudFriendsBoth(me, other){ /* used on accept: write both friend
 }
 async function postScore(g, score){
   const p = PV.store.me(); if(!p || PV.store.isGuest() || score==null) return false;
+  if(PV.sapi && PV.sapi.configured() && PV.sapi.hasToken()){ if(await PV.sapi.probe()){ PV.sapi.postScore(g, score); } }
   await ensure();
   if(state!=='ok') return false;
   await mutate(w=>{
@@ -287,6 +370,10 @@ async function postScore(g, score){
   return true;
 }
 async function topScores(g){
+  if(PV.sapi && PV.sapi.configured()){
+    const rows = await PV.sapi.topScores(g);
+    if(rows) return rows;
+  }
   if(state!=='ok') return PV.store.localScores(g);
   try{
     await pull();
@@ -302,6 +389,10 @@ async function topScoresOld(g){
   return PV.store.localScores(g);
 }
 async function globalBoard(){
+  if(PV.sapi && PV.sapi.configured()){
+    const users = await PV.sapi.globalUsers();
+    if(users) return users.slice(0,50);
+  }
   if(state!=='ok') return localUsersList();
   try{
     await pull();
@@ -327,19 +418,35 @@ function localUsersList(){
   }).filter(Boolean).sort((a,b)=>b.xp-a.xp);
 }
 async function setAnnounce(txt){
+  if(PV.sapi && PV.sapi.configured() && PV.sapi.isAdmin()){
+    if(await PV.sapi.probe()){ try{ await PV.sapi.admin.announce(txt); return true; }catch(e){ return false; } }
+  }
   await ensure(); if(state!=='ok') return false;
   return !!(await mutate(w=>{ w.announce = txt? {txt, ts:Date.now()} : null; }));
 }
 async function getAnnounce(){
+  if(PV.sapi && PV.sapi.configured()){
+    try{ return await PV.sapi.getAnnounce(); }catch(e){ /* fall through */ }
+  }
   await ensure(); if(state!=='ok') return null;
   await pull();
   return (world && world.announce) || null;
 }
 async function setCats(arr){ await ensure(); if(state!=='ok'){ LS.set('cats', arr); return false; } return !!(await mutate(w=>{ w.cats = arr; })); }
 async function getCats(){ const local = LS.get('cats', []); await ensure(); if(state!=='ok') return local; await pull(); return (world && world.cats) || local; }
-async function setFlag(gid, on){ await ensure(); if(state!=='ok'){ const f=LS.get('flags',{}); f[gid]=on; LS.set('flags',f); return false; } return !!(await mutate(w=>{ w.flags[gid]=on; })); }
-async function getFlags(){ await ensure(); if(state!=='ok') return LS.get('flags',{}); await pull(); return (world && world.flags) || {}; }
+async function setFlag(gid, on){
+  if(PV.sapi && PV.sapi.configured() && PV.sapi.isAdmin()){
+    if(await PV.sapi.probe()){ try{ await PV.sapi.admin.flags(gid, on); }catch(e){} }
+  }
+  await ensure(); if(state!=='ok'){ const f=LS.get('flags',{}); f[gid]=on; LS.set('flags',f); return false; } return !!(await mutate(w=>{ w.flags[gid]=on; })); }
+async function getFlags(){
+  if(PV.sapi && PV.sapi.configured()){ const f = await PV.sapi.getFlags(); if(f) return f; }
+  await ensure(); if(state!=='ok') return LS.get('flags',{}); await pull(); return (world && world.flags) || {}; }
 async function worldInfo(){
+  if(PV.sapi && PV.sapi.configured() && await PV.sapi.probe()){
+    const users = await PV.sapi.globalUsers();
+    return {state:'ok', server:true, users:users? users.length : 0, matches:0, online:PV.sapi.onlineNow()};
+  }
   await ensure();
   if(state!=='ok') return {state, users:PV.store.localUsers().length, matches:LS.get('stat:matches',0)};
   await pull();

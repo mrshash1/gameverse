@@ -34,6 +34,16 @@ async function render(view){
       <label class="sw"><input type="checkbox" id="motion" ${s.motion!==false?'checked':''}><i></i></label>
     </div>
     <div class="set-row rise rise-3">
+      <span class="si">${icon('wifi',20)}</span>
+      <div class="st2"><b>${t('st.server')}</b><span>${t('st.serverD')}</span>
+        <div class="row mt-1 wrap" style="gap:8px">
+          <input class="inp" id="svurl" dir="ltr" placeholder="${t('st.serverPh')}" value="${esc(PV.store.settings.serverUrl||'')}" style="flex:1;min-width:200px">
+          <button class="btn sm" id="svtest">${t('sv.test')}</button>
+        </div>
+        <div class="tiny mt-1" id="svstat" style="font-weight:700"></div>
+      </div>
+    </div>
+    <div class="set-row rise rise-3">
       <span class="si">${icon('cloud' in {} ?'wifi':'wifi',20)}</span>
       <div class="st2"><b>${t('st.cloud')}</b><span>${t('au.cloudOn')} / ${t('au.cloudOff')}</span></div>
       <span class="badge ${PV.cloud.state==='ok'?'ok':'warn'}" id="cloudstat">${PV.cloud.state==='ok'? t('c.on') : t('c.off')}</span>
@@ -52,7 +62,7 @@ async function render(view){
       <div style="width:60px;margin:0 auto 8px">${PV.visuals.logo}</div>
       <b>پلی‌ورس — PlayVerse</b>
       <div class="tiny muted">${t('st.ver')} ${PV.ver||'2.0'} · ${t('st.open')}</div>
-      <div class="tiny muted mt-1">7 games · WebRTC P2P · GitHub Pages</div>
+      <div class="tiny muted mt-1">10 games · WebRTC P2P · Real server accounts · GitHub Pages</div>
     </div>
   </div>`;
 
@@ -68,6 +78,20 @@ async function render(view){
   view.querySelector('#vol').oninput = e=> PV.store.saveSettings({vol: e.target.value/100});
   view.querySelector('#snd').onchange = e=>{ PV.store.saveSettings({sound:e.target.checked}); PV.sound.play('pop'); };
   view.querySelector('#motion').onchange = e=> PV.store.saveSettings({motion:e.target.checked});
+  /* ---- game server ---- */
+  const svstat = view.querySelector('#svstat');
+  const svShow = (ok, txt)=>{ svstat.textContent = txt; svstat.style.color = ok? 'var(--ok)':'var(--err)'; };
+  if(PV.sapi && PV.sapi.configured() && PV.sapi.getState()==='ok'){ svShow(true, t('sv.ok')); }
+  view.querySelector('#svtest').onclick = async ()=>{
+    const url = view.querySelector('#svurl').value.trim();
+    PV.store.saveSettings({serverUrl:url});
+    if(!url){ svShow(false, t('c.off')+' — '+t('sv.hint')); return; }
+    svShow(true, t('sv.testing'));
+    const ok = await PV.sapi.probe(true);
+    svShow(ok, ok? t('sv.ok')+' '+t('sv.online',{n:PV.sapi.onlineNow()}) : t('sv.fail'));
+    if(ok) PV.cloud.syncNow();
+  };
+  view.querySelector('#svurl').onkeydown = e=>{ if(e.key==='Enter') view.querySelector('#svtest').click(); };
   view.querySelector('#wipe').onclick = async ()=>{
     if(await PV.ui.confirmDlg(t('st.clearC'))){
       const keep = ['pv:settings'];
