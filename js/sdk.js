@@ -6,6 +6,7 @@ const { el, esc, icon, fmt } = U;
 
 let current = null;
 let launching = null;
+let activeGm = null;   /* message handlers of the ACTIVE match only (no leaks) */
 
 async function launch(opts){
   /* opts: {gameId, mode:'solo'|'online', diff, room, tournament:{round} } */
@@ -45,8 +46,11 @@ async function launch(opts){
     setTurn(txt, cls){ const n=document.getElementById('pl-turn'); if(n){ n.innerHTML=txt; n.className='turn-banner '+(cls||''); } },
     setScores(html){ const n=document.getElementById('pl-scores'); if(n) n.innerHTML=html; },
     send(k, d, to){ if(room) room.gameMsg(k, d, to); },
-    on(k, fn){ if(room) room.on('gm', m=>{ if(m.k===k) fn(m.d, m.from); }); },
+    /* handlers live in a per-match map; ONE room dispatcher routes to the active match.
+       Old matches never receive new messages (fixes phantom-move bugs on rematch). */
+    on(k, fn){ (ctx._gm ||= {})[k] = fn; },
     broadcast(k, d){ if(room) room.gameMsg(k, d); },
+    _gm: null,
     finish: (result)=> finishMatch(opts, ctx, result),
     destroy: null,
   };
@@ -54,6 +58,13 @@ async function launch(opts){
   try{ ctrl = factory(ctx); }catch(e){ console.error(e); }
   ctx.destroy = ()=>{ try{ ctrl?.destroy?.(); }catch(e){} try{ ctrl?.end?.(); }catch(e){} };
   current = {ctx, ctrl, opts, started:Date.now()};
+  activeGm = ctx._gm || (ctx._gm = {});
+  if(room){
+    room.on('gm', m=>{ /* single dispatcher → only the ACTIVE match reacts */
+      const fn = activeGm?.[m.k];
+      if(fn){ try{ fn(m.d, m.from); }catch(e){ console.error('gm', m.k, e); } }
+    });
+  }
   try{ ctrl?.init?.(); ctrl?.start?.(); }catch(e){ console.error(e); }
   launching = null;
   PV.sound.play('whoosh');
@@ -138,6 +149,7 @@ function finishMatch(opts, ctx, result){
 
 function destroy(){
   if(current){ try{ current.ctrl?.destroy?.(); }catch(e){} current=null; }
+  activeGm = null;
   launching = null;
 }
 

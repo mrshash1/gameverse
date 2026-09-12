@@ -18,17 +18,29 @@ async function render(view){
   const liveRooms = PV.net.liveRooms().slice(0,6);
   const missions = p? PV.missions.today() : [];
   const topRows = await PV.cloud.globalBoard();
+  const onlineNow = PV.net.onlineCount();
+
+  /* floating mini game tiles inside the hero */
+  const floatGames = ['tictactoe','rps','memory','connect4'];
+  const hf = i=>`<span class="hf hf${i+1}">${V.thumb(floatGames[i%floatGames.length])}</span>`;
 
   view.innerHTML = `
   <section class="hero rise">
+    <div class="hfloats">${[0,1,2,3].map(hf).join('')}</div>
     <div class="hi">
       <div class="ht">
+        <span class="htag"><i></i>${t('home.stOn')}: <span class="num">${fmt(onlineNow)}</span></span>
         <h1>${t('home.h1')}</h1>
         <p>${t('home.p')}</p>
         <div class="hb">
           <button class="btn wt lg" id="q-quick">${icon('zap',20)} ${t('home.quick')}</button>
           <button class="btn ot" id="q-create">${icon('plus',18)} ${t('home.create')}</button>
           <a class="btn ot" href="#/discover">${icon('compass',18)} ${t('home.browse')}</a>
+        </div>
+        <div class="hstats">
+          <span class="hstat"><b class="num">${fmt(games.length)}</b><span>${t('home.stGames')}</span></span>
+          <span class="hstat"><b class="num">${fmt(liveRooms.length)}</b><span>${t('home.stRooms')}</span></span>
+          <span class="hstat"><b class="num">${fmt(onlineNow)}</b><span>${t('home.stOn')}</span></span>
         </div>
       </div>
       <div class="hcart">${CART_SVG}</div>
@@ -130,25 +142,44 @@ async function render(view){
   });
 }
 
-/* quick play: matchmake for a random online-friendly game, else open room */
+/* quick play: real matchmaking — host creates a room with the shared code,
+   the joiner joins THE SAME code, then the host launches when both are seated */
 async function quickPlay(){
   const candidates = ['tictactoe','rps','connect4','reaction','quiz','memory','word'];
   const g = candidates[Math.floor(Math.random()*candidates.length)];
   if(PV.net.status!=='ok'){ PV.ui.toast(t('mm.netFail'),'err'); location.hash='#/room'; return; }
+  let cancelled = false;
   PV.ui.modal({title:t('mm.searching'), body:`<div class="col center" style="padding:18px 0">
     <div class="spinner" style="width:44px;height:44px;border-width:4px"></div>
-    <p class="muted small">${t('mm.sub')}</p></div>`, actions:[{label:t('mm.cancel'), cls:'ghost', onClick:()=>{ PV.net.leaveQueue(); }}]});
+    <p class="muted small">${t('mm.sub')}</p></div>`, actions:[{label:t('mm.cancel'), cls:'ghost', onClick:()=>{ cancelled = true; PV.net.leaveQueue(); }}]});
+  const closeModal = ()=>{ document.querySelector('#modal-root .x')?.click(); };
   const ok = await PV.net.queueUp(g, found=>{
     PV.net.leaveQueue();
-    document.querySelector('#modal-root .x')?.click();
+    if(cancelled) return;
+    closeModal();
     PV.ui.toast(t('mm.found'),'ok','swords');
-    const r = PV.net.createRoom();
+    const r = found.host ? PV.net.createRoom(found.code) : PV.net.joinRoomByCode(found.code);
     location.hash = '#/room';
-    setTimeout(()=>{
-      if(r.amHost){ r.lobbyState.game = g; r.broadcastLobby(); r.startMatch({gameId:g, seed:Math.floor(Math.random()*1e9), mode:'classic'}); }
-    }, 900);
+    if(found.host && r){
+      r.lobbyState.game = g;
+      r.broadcastLobby();
+      /* launch as soon as the rival is seated (fallback after 7s) */
+      const t0 = Date.now();
+      const iv = setInterval(()=>{
+        if(PV.net.room!==r || PV.sdk.current){ clearInterval(iv); return; }
+        const ready = r.lobbyState?.players?.length>=2;
+        if(ready || Date.now()-t0>7000){
+          clearInterval(iv);
+          if(PV.net.room===r && !PV.sdk.current && r.lobbyState.players.length>=2){
+            r.startMatch({gameId:g, seed:Math.floor(Math.random()*1e9), mode:'classic', players:r.lobbyState.players});
+          } else {
+            PV.ui.toast(t('rm.waitHost'),'info');
+          }
+        }
+      }, 350);
+    }
   });
-  if(!ok){ document.querySelector('#modal-root .x')?.click(); PV.ui.toast(t('mm.netFail'),'err'); }
+  if(!ok){ closeModal(); PV.ui.toast(t('mm.netFail'),'err'); }
 }
 async function joinByCode(c){
   if(PV.net.status!=='ok'){ PV.ui.toast(t('mm.netFail'),'err'); return; }

@@ -88,7 +88,7 @@ const DICT = {
   'rm.mode':['حالت','Mode','الوضع'],
   'md.classic':['کلاسیک','Classic','كلاسيكي'],'md.ranked':['رنک‌دار','Ranked','مصنّف'],
   'md.casual':['تفننی','Casual','عادي'],'md.quick':['سریع (۳ برد)','Quick (3 wins)','سريع (٣ فوز)'],
-  'md.tourney':['تورنمنت','Tournament','بطولة'],
+  'md.tourney':['تورنمنت','Tournament','بطولة'],'md.tournament':['تورنمنت','Tournament','بطولة'],
   'rm.addBot':['+ افزودن بات','+ Add bot','+ إضافة بوت'],'rm.rmBot':['حذف بات','Remove bot','إزالة البوت'],
   'rm.kick':['اخراج','Kick','طرد'],'rm.chat':['گپ اتاق','Room chat','دردشة الغرفة'],
   'rm.chatPh':['پیامت رو بنویس…','Type a message…','اكتب رسالة…'],
@@ -304,6 +304,16 @@ const DICT = {
   'g.semi':['نیمه‌نهایی','Semi-final','نصف النهائي'],
   'g.final':['فینال','Final','النهائي'],
   'g.champ':['🥇 قهرمان: {n}','🥇 Champion: {n}','🥇 البطل: {n}'],
+  'pl.oppLeft':['حریف قطع شد — مساوی ثبت شد','Opponent left — counted as a draw','غادر الخصم — عُدّ تعادلاً'],
+  'g.bothFalse':['هر دو زود زدید! دور تکرار می‌شود','Both too early — round replays','كلا مبكراً — تُعاد الجولة'],
+  'g.waitFin':['در انتظار پایان حریف…','Waiting for opponent to finish…','بانتظار انتهاء الخصم…'],
+  'g.oppTry':['حریف: {n} حدس','Opponent: {n} guesses','الخصم: {n} محاولات'],
+  'g.winFin':['اولین بردارنده می‌برد','First to finish wins','من ينتهي أولاً يفوز'],
+  'g.okFin':['پایان! منتظر حریف…','Done! Waiting for rival…','انتهى! بانتظار الخصم…'],
+  'home.stOn':['آنلاین در شبکه','Online now','متصل الآن'],
+  'home.stRooms':['اتاق زنده','Live rooms','غرف مباشرة'],
+  'home.stGames':['بازی','Games','ألعاب'],
+  'g.scoreFast':['جواب سریع = امتیاز بیشتر!','Fast answer = more points!','إجابة سريعة = نقاط أكثر!'],
 };
 
 let lang = 'fa';

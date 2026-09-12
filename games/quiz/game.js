@@ -1,7 +1,10 @@
-/* ============ Game: Quiz — timed MCQ, solo & online simultaneous ============ */
+/* ============ Game: Quiz — timed MCQ, solo & online simultaneous ============
+   v3: finish protocol — a client only declares win/lose AFTER every opponent's
+   final score arrived (12s fallback), so results can't lie. Exact 15s timer. */
 (function(){
 'use strict';
 const PV = window.PV, U = PV.u, t = PV.t;
+const { esc, fmt } = U;
 
 const BANK = [
   {q:'بزرگ‌ترین سیاره‌ی منظومه‌ی شمسی؟', o:['زمین','مشتری','زحل','مریخ'], a:1},
@@ -13,7 +16,7 @@ const BANK = [
   {q:'نزدیک‌ترین ستاره به زمین؟', o:['شباهنگ','خورشید','قطبی','پروکسیما'], a:1},
   {q:'برج ایفل در کدام شهر است؟', o:['لندن','رم','پاریس','برلین'], a:2},
   {q:'چند قاره روی زمین وجود دارد؟', o:['۵','۶','۷','۸'], a:2},
-  {q:'کدام بازیگر نقش شرلوک هلمز را در سریال بی‌بی‌سی بازی کرد؟', o:['جودی لا','بنديکت کامبربچ','تام هاردی','هنری کاویل'], a:1},
+  {q:'کدام بازیگر نقش شرلوک هلمز را در سریال بی‌بی‌سی بازی کرد؟', o:['جودی لا','بندیکت کامبربچ','تام هاردی','هنری کاویل'], a:1},
   {q:'حاصل ۹ × ۷ ؟', o:['۶۳','۵۶','۷۲','۶۷'], a:0},
   {q:'کدام کشور بیشترین جمعیت را دارد؟', o:['چین','هند','آمریکا','اندونزی'], a:1},
   {q:'اقیانوس بزرگ‌ترین جهان؟', o:['اطلس','هند','آرام','منجمد'], a:2},
@@ -26,6 +29,8 @@ const BANK = [
   {q:'مولد برق جنبشی را به چه تبدیل می‌کند؟', o:['نور','گرما','برق','صدا'], a:2},
   {q:'پایتخت کانادا؟', o:['تورنتو','ونکوور','اتاوا','مونترال'], a:2},
   {q:'کدام خزنده صدای «هیس» دارد؟', o:['مار','قورباغه','لاک‌پشت','سنجاب'], a:0},
+  {q:'کدام سیاره «سیاره‌ی سرخ» نام دارد؟', o:['زهره','مشتری','مریخ','عطارد'], a:2},
+  {q:'بزرگ‌ترین جزیره‌ی جهان؟', o:['گرینلند','ماداگاسکار','بورنئو','استرالیا'], a:0},
 ];
 const NQ = 8, TIME = 15;
 
@@ -37,9 +42,12 @@ PV.registry.register({
     const qs = U.shuffle(BANK, rng).slice(0, NQ);
     const isMP = ctx.mode!=='solo';
     const players = ctx.players||[];
+    const otherPids = players.map(pl=>pl.pid).filter(pid=>pid && pid!==ctx.selfPid);
     let idx = 0, myScore = 0, scores = {};
     players.forEach(pl=>scores[pl.pid]=0);
-    let locked = false, timer = null, tLeft = TIME;
+    const finals = {};                       /* pid → final score ('fin' protocol) */
+    let locked = false, timer = null, tLeft = TIME, done = false;
+    let finTO = null;
     let t0 = 0;
 
     const root = document.createElement('div');
@@ -54,19 +62,22 @@ PV.registry.register({
       </div>
       <div class="quiz-q" id="qq"></div>
       <div class="quiz-opts" id="qo"></div>
-      <div class="gmsg" id="qm"></div>
+      <div class="gmsg" id="qm">${isMP? t('g.scoreFast'):''}</div>
     </div>`;
     ctx.root.appendChild(root);
     const $ = s=>root.querySelector(s);
 
     function show(){
-      if(idx>=qs.length){ endMatch(); return; }
+      if(idx>=qs.length){ allDone(); return; }
       locked=false; tLeft=TIME; t0=Date.now();
       const q = qs[idx];
       $('#qq').textContent = q.q;
       $('#qidx').textContent = fmt(idx+1)+'/'+fmt(NQ);
       $('#qprog').style.width = (idx/NQ*100)+'%';
       $('#qm').textContent='';
+      $('#qt').textContent = fmt(TIME);
+      $('#qarc').style.strokeDashoffset = 0;
+      $('#qarc').style.stroke = 'var(--p1)';
       const order = U.shuffle([0,1,2,3], U.mulberry32(ctx.seed+idx));
       $('#qo').innerHTML='';
       order.forEach((oi, pos)=>{
@@ -78,7 +89,7 @@ PV.registry.register({
         $('#qo').appendChild(b);
       });
       clearInterval(timer);
-      timer = setInterval(tick, 1000); tick();
+      timer = setInterval(tick, 1000);
     }
     function tick(){
       tLeft--;
@@ -102,27 +113,46 @@ PV.registry.register({
         else if(btn && b2===btn) b2.classList.add('wrong');
       });
       if(correct){ myScore += 1 + (ms<4000?1:0); PV.sound.play('coin'); } else PV.sound.play('falseStart');
-      if(isMP){
-        ctx.broadcast('ans', {idx, ok:correct, ms});
-        scores[ctx.selfPid] = myScore;
-        setTimeout(next, 1600);
-      } else {
-        setTimeout(next, 1200);
-      }
+      scores[ctx.selfPid] = myScore;
+      if(isMP) ctx.broadcast('ans', {idx, ok:correct, ms});
       ctx.setStatus(t('lb.pts')+': '+fmt(myScore));
+      setTimeout(next, correct? 1000:1500);
     }
     function next(){
       idx++;
       show();
     }
-    function endMatch(){
+    /* ---- all questions answered: share the final score, then conclude ---- */
+    function allDone(){
+      if(done) return;
+      done = true;
+      scores[ctx.selfPid] = myScore;
+      if(isMP){
+        finals[ctx.selfPid] = myScore;
+        ctx.broadcast('fin', {score: myScore});
+        if(otherPids.every(pid=>finals[pid]!=null)) conclude();
+        else {
+          $('#qm').textContent = t('g.waitFin');
+          ctx.setStatus(t('g.waitFin'));
+          finTO = setTimeout(conclude, 12000);   /* offline rival fallback */
+        }
+      } else {
+        conclude();
+      }
+    }
+    function conclude(){
+      clearTimeout(finTO);
       let res='d';
       if(isMP){
-        const others = Object.entries(scores).filter(([pid])=>pid!==ctx.selfPid).map(([,v])=>v);
+        const others = otherPids.map(pid=>finals[pid] ?? scores[pid] ?? 0);
         const best = Math.max(...others, -1);
         res = myScore>best? 'w' : myScore===best? 'd':'l';
-      } else res = 'w';
-      ctx.finish({res, vsHuman:isMP, scores:{...scores, [ctx.selfPid]:myScore}, stats:{correct:myScore},
+      } else {
+        res = myScore>=NQ? 'w' : myScore>=Math.ceil(NQ/2)? 'd' : 'l';
+      }
+      const finalsScores = {...scores};
+      otherPids.forEach(pid=>{ if(finals[pid]!=null) finalsScores[pid]=finals[pid]; });
+      ctx.finish({res, vsHuman:isMP, scores:finalsScores, stats:{correct:myScore},
         sub: t('lb.pts')+': '+fmt(myScore)+'/'+fmt(NQ*2)});
     }
     if(isMP){
@@ -130,14 +160,19 @@ PV.registry.register({
         if(scores[from]==null) scores[from]=0;
         if(d.ok) scores[from]+= 1 + (d.ms<4000?1:0);
       });
+      ctx.on('fin', (d, from)=>{
+        if(from===ctx.selfPid) return;
+        finals[from] = d.score|0;
+        if(done && otherPids.every(pid=>finals[pid]!=null)) conclude();
+      });
     }
     show();
     return {
       init(){}, start(){},
-      reset(){ idx=0; myScore=0; players.forEach(pl=>scores[pl.pid]=0); show(); },
-      getState(){ return {idx}; }, end(){ clearInterval(timer); }, destroy(){ root.remove(); clearInterval(timer); },
-      getScores(){ return {...scores, [ctx.selfPid]:myScore}; },
-      getStatus(){ return t('lb.pts')+': '+fmt(myScore); },
+      reset(){ idx=0; myScore=0; done=false; clearTimeout(finTO); players.forEach(pl=>scores[pl.pid]=0); for(const k in finals) delete finals[k]; show(); },
+      getState(){ return {idx}; }, end(){ clearInterval(timer); clearTimeout(finTO); }, destroy(){ root.remove(); clearInterval(timer); clearTimeout(finTO); },
+      getScores(){ const s={...scores, [ctx.selfPid]:myScore}; otherPids.forEach(pid=>{ if(finals[pid]!=null) s[pid]=finals[pid]; }); return s; },
+      getStatus(){ return done? t('g.waitFin') : t('lb.pts')+': '+fmt(myScore); },
     };
   }
 });

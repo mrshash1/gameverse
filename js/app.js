@@ -38,6 +38,8 @@ async function render(){
   view.innerHTML = `<div style="display:flex;justify-content:center;padding:60px 0"><div class="spinner" style="width:34px;height:34px"></div></div>`;
   try{ await screen.render(view, m, {token, isFresh:()=>token===renderToken}); }
   catch(e){ console.error('screen error', id, e); view.innerHTML = `<div class="empty"><span class="eic">${PV.visuals.icon('info',30)}</span><p>${t('c.retry')}</p></div>`; }
+  /* page-in transition */
+  view.classList.remove('page-in'); void view.offsetHeight; view.classList.add('page-in');
   PV.ui.renderNav();
   window.scrollTo({top:0});
 }

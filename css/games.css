@@ -134,3 +134,75 @@
 /* generic game helper */
 .gcenter{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%}
 .gmsg{font-weight:800;color:var(--tx2);text-align:center}
+
+/* ==================== v3 UI BOOST ==================== */
+
+/* ---------- Tic Tac Toe ---------- */
+.t3 .cell{background:linear-gradient(160deg,var(--surface2),var(--surface));box-shadow:inset 0 1px 0 rgba(255,255,255,.6),var(--sh-1)}
+[data-theme="dark"] .t3 .cell{box-shadow:inset 0 1px 0 rgba(255,255,255,.06),var(--sh-1)}
+.t3 .cell.x{color:var(--p1);filter:drop-shadow(0 4px 10px rgba(124,92,255,.4))}
+.t3 .cell.o{color:var(--p3);filter:drop-shadow(0 4px 10px rgba(0,201,189,.4))}
+.t3 .cell.win{background:var(--grad-green);border-color:transparent;box-shadow:0 8px 24px rgba(34,197,94,.5);animation:winGlow 1s ease-in-out infinite}
+@keyframes winGlow{0%,100%{box-shadow:0 8px 24px rgba(34,197,94,.5)}50%{box-shadow:0 8px 34px rgba(34,197,94,.8)}}
+
+/* ---------- RPS ---------- */
+.rps-hand{background:linear-gradient(160deg,var(--surface2),var(--surface));font-size:3.4rem;width:112px;height:112px;border-radius:28px}
+.rps-hand.me{border-color:var(--p1);box-shadow:var(--glow-p),0 10px 26px -8px rgba(124,92,255,.45)}
+.rps-hand.op{border-color:var(--p4);box-shadow:0 0 0 3px rgba(255,92,157,.15)}
+.rps-choice{width:80px;height:80px;border-radius:24px;font-size:2.4rem;background:linear-gradient(160deg,var(--surface2),var(--surface));box-shadow:var(--sh-1)}
+.rps-choice.sel{border-color:var(--p1);background:linear-gradient(160deg,rgba(124,92,255,.18),rgba(124,92,255,.06));box-shadow:var(--glow-p);transform:scale(1.08)}
+
+/* ---------- Memory ---------- */
+.mem-card .f{background:linear-gradient(140deg,#6d4dff,#9d7bff 55%,#00c9bd 130%);background-size:200% 200%;box-shadow:var(--sh-p)}
+.mem-card .f::after{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.25) 1px,transparent 1px);background-size:12px 12px;opacity:.5;border-radius:inherit}
+.mem-card.matched .b{background:linear-gradient(160deg,rgba(34,197,94,.2),rgba(15,181,166,.12));border-color:var(--ok);box-shadow:0 6px 18px rgba(34,197,94,.25);animation:cellPop .35s}
+.mem-card.mine.matched .b{outline:2.5px solid var(--p1);outline-offset:-2.5px}
+
+/* ---------- Quiz ---------- */
+.quiz-q{background:linear-gradient(160deg,var(--surface2),var(--surface));border:2px solid var(--border);box-shadow:var(--sh-1);position:relative;overflow:hidden}
+.quiz-q::before{content:'';position:absolute;top:0;inset-inline:0;height:4px;background:var(--grad-p);opacity:.8}
+.quiz-opt{background:linear-gradient(160deg,var(--surface2),var(--surface));box-shadow:var(--sh-1);position:relative}
+.quiz-opt .ol{transition:all .2s}
+.quiz-opt:hover:not(:disabled) .ol{background:var(--grad-p);color:#fff;transform:scale(1.1) rotate(-6deg)}
+.quiz-opt.correct{border-color:var(--ok);background:linear-gradient(160deg,rgba(24,181,102,.16),rgba(24,181,102,.05));animation:correctPop .4s cubic-bezier(.2,.9,.3,1.5)}
+.quiz-opt.wrong{border-color:var(--err);background:linear-gradient(160deg,rgba(239,68,103,.14),rgba(239,68,103,.04));animation:shakeX .4s}
+@keyframes correctPop{0%{transform:scale(.96)}55%{transform:scale(1.03)}100%{transform:scale(1)}}
+@keyframes shakeX{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.quiz-timer .pring{filter:drop-shadow(0 4px 10px rgba(124,92,255,.3))}
+
+/* ---------- Reaction ---------- */
+.react-pad{
+  background:linear-gradient(135deg,#6d4dff,#9d7bff 55%,#b44dff);background-size:200% 200%;
+  box-shadow:0 20px 44px -14px rgba(109,77,255,.6),inset 0 1px 0 rgba(255,255,255,.3);
+  transition:background .15s,transform .1s,box-shadow .2s;
+}
+.react-pad:active{transform:scale(.985)}
+.react-pad.wait{background:linear-gradient(135deg,#ef4467,#ff8080);box-shadow:0 20px 44px -14px rgba(239,68,103,.55),inset 0 1px 0 rgba(255,255,255,.3)}
+.react-pad.go{background:linear-gradient(135deg,#18b566,#0fb5a6);animation:goPulse .55s infinite;box-shadow:0 20px 50px -12px rgba(24,181,102,.7),inset 0 1px 0 rgba(255,255,255,.35)}
+@keyframes goPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.022)}}
+.react-chip{background:var(--surface2);border:1.5px solid var(--border);box-shadow:var(--sh-1);animation:cellPop .3s}
+.react-chip.false{background:rgba(239,68,103,.12);color:var(--err);border-color:rgba(239,68,103,.4)}
+
+/* ---------- Connect Four ---------- */
+.c4-grid{background:linear-gradient(160deg,#5a3df0,#8f6bff 55%,#7c5cff);box-shadow:0 24px 50px -16px rgba(109,77,255,.55),inset 0 2px 0 rgba(255,255,255,.25)}
+.c4-cell{background:rgba(10,8,40,.28);box-shadow:inset 0 3px 8px rgba(0,0,0,.3)}
+.c4-cell:hover:not(.taken)::after{content:'◌';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.55);font-size:1.3rem}
+.c4-disc.p0{background:radial-gradient(circle at 34% 30%,#ffd08a,#ff8a3d 60%,#e86a1f 100%);box-shadow:inset 0 -5px 10px rgba(0,0,0,.28),0 4px 10px rgba(0,0,0,.28),0 0 14px rgba(255,138,61,.35)}
+.c4-disc.p1{background:radial-gradient(circle at 34% 30%,#ff9ec4,#ff4d8f 60%,#e0316f 100%);box-shadow:inset 0 -5px 10px rgba(0,0,0,.28),0 4px 10px rgba(0,0,0,.28),0 0 14px rgba(255,77,143,.35)}
+@keyframes drop{from{transform:translateY(-380%) scale(.9)}60%{transform:translateY(0) scale(1.02)}80%{transform:translateY(-8%)}to{transform:translateY(0) scale(1)}}
+
+/* ---------- Word ---------- */
+.wcell{background:linear-gradient(160deg,var(--surface2),var(--surface));box-shadow:var(--sh-1);position:relative}
+.wcell.reveal{animation:tileFlip .5s cubic-bezier(.2,.7,.3,1.2)}
+@keyframes tileFlip{0%{transform:rotateX(-90deg) scale(.9)}60%{transform:rotateX(12deg)}100%{transform:rotateX(0) scale(1)}}
+.wcell.ok{background:var(--grad-green);color:#fff;border-color:transparent;box-shadow:0 8px 20px -6px rgba(34,197,94,.55)}
+.wcell.mid{background:var(--grad-gold);color:#fff;border-color:transparent;box-shadow:0 8px 20px -6px rgba(255,176,32,.5)}
+.wcell.bad{background:var(--surface3);color:var(--tx3);border-color:var(--border);opacity:.75}
+.wkey{background:linear-gradient(180deg,var(--surface2),var(--surface));box-shadow:0 2px 5px rgba(30,25,90,.12);border-radius:12px}
+.wkey.accent{background:var(--grad-p);color:#fff;border-color:transparent;box-shadow:var(--sh-p)}
+.wkey.k-ok{background:var(--grad-green);color:#fff;border-color:transparent}
+.wkey.k-mid{background:var(--grad-gold);color:#fff;border-color:transparent}
+.wkey.k-bad{background:var(--surface3);color:var(--tx3);opacity:.7}
+
+/* ---------- turn banner shimmer ---------- */
+.turn-banner.me{background:linear-gradient(110deg,#7c5cff,#9d7bff,#00c9bd,#7c5cff);background-size:280% 100%;animation:gradMove 3.5s linear infinite;border:none}

@@ -41,13 +41,14 @@ function register(meta){
 function loadFactory(id){
   return factories.get(id) || null;
 }
-/* lazy-load game module from games/<id>/game.js */
+/* lazy-load game module from games/<id>/game.js (cache-busted so deploys go live instantly) */
+const PV_VERSION = '3.0.1';
 function ensureLoaded(id){
   return new Promise((res, rej)=>{
     if(factories.has(id) || loadedScripts.has(id)) return res(factories.get(id)||null);
     loadedScripts.add(id);
     const s = document.createElement('script');
-    s.src = 'games/'+id+'/game.js';
+    s.src = 'games/'+id+'/game.js?v='+PV_VERSION;
     s.onload = ()=> res(factories.get(id)||null);
     s.onerror = ()=> rej(new Error('game module not found: '+id));
     document.head.appendChild(s);

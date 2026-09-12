@@ -76,11 +76,15 @@ function pushScore(g, score, meta={}){
 function localScores(g){ return LS.get('board:'+g, []); }
 
 /* daily streak (Tehran calendar) */
+function dayKey(d){
+  try{ return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tehran'}).format(d); }
+  catch(e){ const x=new Date(d); return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0'); }
+}
 function touchStreak(){
   const p = me(); if(!p) return {streak:0, isNew:false};
-  const today = U.todayKey();
+  const today = dayKey(new Date());
   if(p.streak.last === today) return {streak:p.streak.count, isNew:false};
-  const y = new Date(Date.now()-864e5), yk = U.todayKey();
+  const yk = dayKey(new Date(Date.now()-864e5));   /* YESTERDAY's key — fixes the never-stacking streak bug */
   p.streak.count = (p.streak.last === yk) ? (p.streak.count||0)+1 : 1;
   p.streak.last = today;
   if(p.streak.count > (p.stats.bestDayStreak||0)) p.stats.bestDayStreak = p.streak.count;

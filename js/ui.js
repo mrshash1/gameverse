@@ -99,7 +99,7 @@ function gameCard(g){
 
 /* ---------- Section header ---------- */
 function sectHead(title, ic, moreHref){
-  return `<div class="sect-h rise"><h2>${ic?icon(ic,20):''}${title}</h2>${moreHref?`<a class="more" href="${moreHref}">${t('c.seeAll')} ${PV.i18n.dir==='rtl'?'‹':'›'}</a>`:''}</div>`;
+  return `<div class="sect-h rise"><h2>${ic?`<span class="sic">${icon(ic,18)}</span>`:''}${title}</h2>${moreHref?`<a class="more" href="${moreHref}">${t('c.seeAll')} ${PV.i18n.dir==='rtl'?'‹':'›'}</a>`:''}</div>`;
 }
 
 /* ---------- Leaderboard list ---------- */

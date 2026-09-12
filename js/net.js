@@ -121,7 +121,12 @@ class GameRoom {
       }
     });
     this.aCh.on((d, id)=>{ this.h('chat', {...d, pid:id}); PV.sound.play('msg'); });
-    this.aSt.on((d, id)=>{ if(id===this.hostPid){ this.inMatch = true; this.h('start', d); } });
+    this.aSt.on((d, id)=>{ /* race-safe: accept start from the host even before any lobby snapshot arrived */
+      if(this.hostPid && id!==this.hostPid) return;
+      this.hostPid = id; this.inMatch = true;
+      if(d?.players?.length) this.lobbyState = {host:id, game:d.gameId, mode:d.mode||'classic', players:d.players, ts:Date.now()};
+      this.h('start', d);
+    });
     this.aGm.on((d, id)=>{ this.h('gm', {...d, from:id}); });
     this.aKk.on(()=>{ this.h('kicked'); });
   }
@@ -130,7 +135,9 @@ class GameRoom {
     return {name: p? p.name : (PV.store.displayName()||t('c.guest')), av: p? p.avatar:'fox', lvl: p? U.levelFromXp(p.xp).level:1};
   }
   h(k, d){ const list=this.handlers[k]; if(list) list.forEach(fn=>{ try{fn(d);}catch(e){console.error(e);} }); }
-  on(k, fn){ (this.handlers[k] ||= []).push(fn); }
+  /* REPLACE semantics per key — re-registering never stacks duplicate handlers
+     (fixes double-launch / double-chat / phantom-handler bugs on re-render) */
+  on(k, fn){ this.handlers[k] = fn? [fn] : []; }
   electHost(){
     const ids = [selfId, ...this.peers.keys()].sort();
     this.hostPid = ids[0];
@@ -218,14 +225,15 @@ PV.net = {
   ready: null,
   events,
   joinLobby,
-  createRoom(){
-    const c = U.code(5);
+  createRoom(code){
+    const c = String(code || U.code(5)).toUpperCase();
     const r = new GameRoom(c);
     roomInst = r; r.hostPid = selfId; r.amHost = true; r.initLobbyFromOld();
     return r;
   },
   joinRoomByCode(c){ const r = new GameRoom(String(c).toUpperCase()); roomInst = r; return r; },
   get room(){ return roomInst; },
+  set room(v){ roomInst = v; },
   queueUp, leaveQueue,
   setExchange(fn){ exchangeHandlers = fn; },
   lobby,
@@ -237,6 +245,8 @@ PV.net = {
   },
   onlineCount(){ prune(lobby.peers); return lobby.peers.size; }
 };
+/* writable alias so screens can detach the current room safely */
+Object.defineProperty(PV.net, 'room', { get(){ return roomInst; }, set(v){ roomInst = v; }, configurable:true });
 init();
 window.Net = PV.net;
 document.dispatchEvent(new CustomEvent('pv:net'));

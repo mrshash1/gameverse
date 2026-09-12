@@ -12,21 +12,15 @@ async function render(view, m){
     /* direct deep-link to a play url without options → solo */
     PV.sdk.launch({gameId:gid, mode:'solo'});
   }
-  if(!sdk){ /* shell renders now; sdk.launch fills #game-root when ready */
-    sdk = null;
-  }
-  const ctx = sdk? sdk.ctx : {gameId:gid, meta:PV.registry.get(gid), mode:'solo', players:[], room:null, selfPid:PV.net.selfId};
-  const ctrl = sdk?.ctrl || null;
-  const g = ctx.meta;
-  const p = PV.store.me();
-
+  /* render the shell NOW (sdk.launch needs #game-root), then wait for the
+     real match context so players/chat/room wiring never fall back to a stub */
   view.innerHTML = `
   <div class="play-wrap">
     <div class="play-main">
       <div class="play-top rise">
         <a class="btn sm ghost" href="#/" id="exitBtn" title="${t('pl.exitC')}">${icon('x',16)}</a>
         <span class="gt"><span class="av" style="width:36px;height:36px;border-radius:12px;overflow:hidden">${V.thumb(gid)}</span> ${esc(PV.t('g.'+gid))}</span>
-        <span class="badge pp">${ctx.mode==='solo'? t('gd.solo') : t('md.'+(ctx.mode||'classic'))}</span>
+        <span class="badge pp" id="pl-mode"></span>
         <span class="spacer"></span>
         <button class="btn sm icon ghost" id="soundBtn" title="${t('st.sound')}">${icon(PV.sound.enabled?'vol':'volOff',17)}</button>
         <button class="btn sm icon ghost" id="fsBtn" title="${t('pl.fullscr')}">${icon('expand',17)}</button>
@@ -44,21 +38,25 @@ async function render(view, m){
         <b class="small">${t('c.players')}</b>
         <div class="col mt-1" style="gap:9px" id="pl-list"></div>
       </div>
-      ${ctx.room? `
-      <div class="chat-box" style="height:300px">
-        <div class="bd-h" style="padding:11px 14px;border-bottom:1.5px solid var(--border);font-weight:900;font-size:.86rem">${icon('chat',15)} ${t('rm.chat')}</div>
-        <div class="chat-log" id="clog"></div>
-        <div class="chat-inp">
-          <input class="inp" id="cin" placeholder="${t('rm.chatPh')}" maxlength="120">
-          <button class="btn icon" id="cgo">${icon('send',16)}</button>
-        </div>
-      </div>`:''}
+      <div id="pl-chat-slot"></div>
       <div class="card" style="padding:13px">
         <b class="small">${t('gd.how')}</b>
         <p class="tiny muted mt-1">${esc(PV.t('g.'+gid+'.h'))}</p>
       </div>
     </div>
   </div>`;
+
+  /* wait for the launching match to attach (shell above is already mounted) */
+  let iter = 0;
+  while(!PV.sdk.current && PV.sdk.launching===gid && iter++<120) await U.sleep(40);
+  sdk = PV.sdk.current;
+  const ctx = sdk? sdk.ctx : {gameId:gid, meta:PV.registry.get(gid), mode:'solo', players:[], room:null, selfPid:PV.net.selfId};
+  const ctrl = sdk?.ctrl || null;
+  const g = ctx.meta;
+  const p = PV.store.me();
+
+  const modeEl = view.querySelector('#pl-mode');
+  if(modeEl) modeEl.textContent = ctx.mode==='solo'? t('gd.solo') : t('md.'+(ctx.mode||'classic'));
 
   /* mount ctx.root into the (fresh) #game-root */
   const fresh = document.getElementById('game-root');
@@ -78,8 +76,9 @@ async function render(view, m){
   view.querySelector('#exitBtn').onclick = async e=>{
     e.preventDefault();
     if(await PV.ui.confirmDlg(t('pl.exitC'), t('pl.left'))){
+      const liveRoom = PV.sdk.current?.ctx?.room || ctx.room;   /* read AFTER launch race resolved */
       PV.sdk.destroy();
-      location.hash = ctx.room? '#/room' : '#/';
+      location.hash = liveRoom? '#/room' : '#/';
     }
   };
   function drawScores(){
@@ -91,12 +90,23 @@ async function render(view, m){
         <b class="small" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(pl.name)}${pl.pid===PV.net.selfId? ' ('+t('c.you')+')':''}</b>
         <b class="num" style="color:var(--p1)">${fmt(scores[pl.pid]??0)}</b>
       </div>`).join('');
-    const me = list.find(x=>x.pid===PV.net.selfId) || list[0];
-    const op = list.find(x=>x.pid!==me?.pid);
-    view.querySelector('#pl-scores').innerHTML = `
-      <span class="sc">${me? avatarHtml(me,40):''}<b>${esc(me?.name||'—')}</b><b class="num" style="color:var(--p1)">${fmt(scores[me?.pid]??0)}</b></span>
-      <span class="vs">VS</span>
-      <span class="sc">${op? avatarHtml(op,40):''}<b>${esc(op?.name||'—')}</b><b class="num" style="color:var(--p4)">${fmt(scores[op?.pid]??0)}</b></span>`;
+    const strip = view.querySelector('#pl-scores');
+    if(list.length<=2){
+      const me = list.find(x=>x.pid===PV.net.selfId) || list[0];
+      const op = list.find(x=>x.pid!==me?.pid);
+      strip.innerHTML = `
+        <span class="sc">${me? avatarHtml(me,40):''}<b>${esc(me?.name||'—')}</b><b class="num" style="color:var(--p1)">${fmt(scores[me?.pid]??0)}</b></span>
+        <span class="vs">VS</span>
+        <span class="sc">${op? avatarHtml(op,40):''}<b>${esc(op?.name||'—')}</b><b class="num" style="color:var(--p4)">${fmt(scores[op?.pid]??0)}</b></span>`;
+    } else {
+      /* 3+ players (quiz): compact chips sorted by score */
+      const sorted = [...list].sort((a,b)=>(scores[b?.pid]??0)-(scores[a?.pid]??0));
+      strip.innerHTML = sorted.map((pl,i)=>`
+        <span class="sc mini ${pl.pid===PV.net.selfId?'me':''}">
+          <span class="rk">${icon(i===0?'crown':'user',13)}</span>${avatarHtml(pl,30)}
+          <b>${esc(pl.name)}</b><b class="num" style="color:var(--p1)">${fmt(scores[pl.pid]??0)}</b>
+        </span>`).join('');
+    }
   }
   /* live score refresh */
   const iv = setInterval(()=>{
@@ -105,6 +115,17 @@ async function render(view, m){
     if(ctrl?.getStatus?.()){ const st=document.getElementById('pl-status'); if(st) st.textContent = ctrl.getStatus(); }
   }, 700);
   if(ctx.room){
+    /* room chat mounts lazily once the real ctx is known */
+    const slot = view.querySelector('#pl-chat-slot');
+    if(slot) slot.innerHTML = `
+      <div class="chat-box" style="height:300px">
+        <div class="bd-h" style="padding:11px 14px;border-bottom:1.5px solid var(--border);font-weight:900;font-size:.86rem">${icon('chat',15)} ${t('rm.chat')}</div>
+        <div class="chat-log" id="clog"></div>
+        <div class="chat-inp">
+          <input class="inp" id="cin" placeholder="${t('rm.chatPh')}" maxlength="120">
+          <button class="btn icon" id="cgo">${icon('send',16)}</button>
+        </div>
+      </div>`;
     ctx.room.on('chat', c=>{
       const log = document.getElementById('clog'); if(!log) return;
       const me2 = c.pid===PV.net.selfId;

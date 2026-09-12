@@ -38,24 +38,33 @@ async function render(view, m){
   r.on('chat', c=> addChat(c));
   r.on('leave', id=>{
     PV.ui.toast(t('rm.opLeft'),'warn','wifiOff');
+    /* if the opponent left mid-match, end it honestly instead of freezing */
+    const cur = PV.sdk.current;
+    if(cur && !cur.ctx._finishing && cur.opts.mode!=='solo' && cur.ctx.players?.some(pl=>pl.pid===id)){
+      cur.ctx.finish({res:'d', vsHuman:true, sub:t('pl.oppLeft')});
+    }
     if(r.amHost){ /* host fills the seat with a bot if a match is running */
-      if(PV.sdk.current){ PV.sdk.current.opts.botTakeover = id; }
+      if(cur){ cur.opts.botTakeover = id; }
     }
     draw();
   });
   r.on('host', ()=>{ PV.ui.toast(t('rm.becameHost'),'ok','crown'); draw(); });
   r.on('start', payload=>{
-    PV.sdk.launch({gameId:payload.gameId, mode:payload.mode, seed:payload.seed, room:r, tournament:payload.tournament});
+    PV.sdk.launch({gameId:payload.gameId, mode:payload.mode, seed:payload.seed, room:r, players:payload.players, tournament:payload.tournament});
   });
-  r.on('kicked', ()=>{ PV.ui.toast(t('rm.kick'),'err'); PV.net.room=null; myRoom=null; location.hash='#/'; });
+  r.on('kicked', ()=>{ PV.ui.toast(t('rm.kick'),'err'); PV.net.room = null; myRoom=null; location.hash='#/'; });
 
-  window.addEventListener('hashchange', onLeaveHash, {once:true});
-  function onLeaveHash(){
-    if(!location.hash.startsWith('#/play') && !location.hash.startsWith('#/room')){
-      try{ r.leave(); }catch(e){}
-      if(PV.net.room===r) PV.net.room = null;
-    }
-  }
+  /* persistent nav hook: clean the room up the moment we truly leave it
+     (survives room→play→home transitions; never stacks duplicates) */
+  if(r._navHook){ window.removeEventListener('hashchange', r._navHook); }
+  r._navHook = function onLeaveHash(){
+    if(location.hash.startsWith('#/play') || location.hash.startsWith('#/room')) return;
+    window.removeEventListener('hashchange', onLeaveHash);
+    r._navHook = null;
+    try{ r.leave(); }catch(e){}
+    if(PV.net.room===r) PV.net.room = null;
+  };
+  window.addEventListener('hashchange', r._navHook);
 
   function netFail(){
     return `<div class="empty"><span class="eic">${icon('wifiOff',32)}</span><p>${t('mm.netFail')}</p><a class="btn" href="#/">${t('nav.home')}</a></div>`;

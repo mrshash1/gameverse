@@ -98,7 +98,7 @@ PV.registry.register({
       const r = dropRow(board,c); if(r<0||over) return;
       board[r][c]=turn;
       PV.sound.play('place'); U.vibrate();
-      if(isMP && ctx.amHost) ctx.broadcast('state',{b:board, t: turn? 0:1});
+      if(isMP && ctx.amHost) ctx.broadcast('state',{b: board.map(r=>[...r]), t: turn? 0:1});
       const w = findWin(board, turn);
       const full = board[0].every(x=>x!=null);
       if(w || full){ render(); endGame(w? turn : null); }
@@ -125,7 +125,11 @@ PV.registry.register({
       }), 950);
     }
     if(isMP){
-      ctx.on('mv', d=>{ if(ctx.amHost && turn=== (d.c!=null? turn:turn)) { if(d.c!=null) apply(d.c); } });
+      ctx.on('mv', d=>{ /* host authority: only seat 1 may move, and only on their turn */
+        if(!ctx.amHost || over || d.c==null) return;
+        if(turn!==1) return;
+        apply(d.c|0);
+      });
       ctx.on('state', d=>{ board=d.b; turn=d.t; render(); });
       ctx.on('over', d=>{
         if(over) return; over=true;
