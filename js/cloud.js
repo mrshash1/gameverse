@@ -23,45 +23,63 @@ async function tfetch(url, opts={}, ms=4500){
   finally{ clearTimeout(to); }
 }
 function jsonblobId(){ return LS.get(JSONBLOB_KEY, null); }
+const CFG = window.SRV_CONFIG || null;
+let lastMiss = false;   /* jsonblob 404 → safe to recreate */
 
+function cfgProvider(){
+  if(CFG && CFG.provider==='textdb' && CFG.key) return {name:'textdb', key:String(CFG.key), etagOk:false};
+  return null;
+}
 function provider(){
   const ep = (PV.store.settings.endpoint||'').trim();
   if(ep) return {name:'custom', url:ep, etagOk:true};
+  const c = cfgProvider();
+  if(c) return c;
   const id = jsonblobId();
   if(id) return {name:'jsonblob', url:'https://jsonblob.com/api/jsonBlob/'+id, etagOk:true};
   return null;
 }
+/* --- textdb.online driver: CORS *, reads always 200 (empty body = not created yet),
+       writes via POST form to /update (NO trailing slash — /update/ 301 would drop the body) --- */
+async function tdRead(key){
+  const r = await tfetch('https://textdb.online/'+key+'?_='+Date.now(), {cache:'no-store', headers:{'Accept':'text/plain'}}, 7000);
+  if(!r.ok) throw 0;
+  return (await r.text()||'').trim();
+}
+async function tdWrite(key, obj){
+  const body = 'key='+encodeURIComponent(key)+'&value='+encodeURIComponent(JSON.stringify(obj));
+  const r = await tfetch('https://textdb.online/update', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body}, 12000);
+  if(!r.ok) return false;
+  try{ const j = await r.json(); if(j && j.status===0) return false; }catch(e){}
+  return true;
+}
 
 async function probe(){
-  state = 'off';
+  state = 'off'; lastMiss = false;
   const p = provider();
   if(!p) return false;
-  try{
-    const r = await tfetch(p.url, {cache:'no-store', headers:{'Accept':'application/json'}});
-    if(!r.ok) throw 0;
-    etag = r.headers.get('ETag');
-    world = await r.json();
-    if(!world || typeof world!=='object') throw 0;
-    if(!world.users) world = blankWorld();
-    state = 'ok';
-    return true;
-  }catch(e){
-    // maybe world blob was purged (jsonblob 404) → recreate
-    if(p.name==='jsonblob' && jsonblobId()){
-      try{
-        const r2 = await tfetch('https://jsonblob.com/api/jsonBlob', {method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify(blankWorld())});
-        if(r2.ok){
-          const loc = r2.headers.get('Location') || r2.headers.get('X-jsonblob');
-          const id = (loc||'').split('/').pop();
-          if(id){ LS.set(JSONBLOB_KEY, id); state='ok'; etag=r2.headers.get('ETag'); world=blankWorld(); return true; }
-        }
-      }catch(e2){}
-    }
-    state = 'fail';
-    return false;
+  const w = await pull();
+  if(state==='ok') return true;
+  /* self-heal: only when the provider says the record is GONE (404), never on garbage */
+  if(p.name==='jsonblob' && lastMiss){
+    try{
+      const r2 = await tfetch('https://jsonblob.com/api/jsonBlob', {method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify(blankWorld())});
+      if(r2.ok){
+        const loc = r2.headers.get('Location') || r2.headers.get('X-jsonblob');
+        const id = (loc||'').split('/').pop();
+        if(id){ LS.set(JSONBLOB_KEY, id); state='ok'; etag=r2.headers.get('ETag'); world=blankWorld(); return true; }
+      }
+    }catch(e2){}
   }
+  state = 'fail';
+  return false;
 }
 async function createWorld(){
+  const c = cfgProvider();
+  if(c && c.name==='textdb'){
+    const w = blankWorld();
+    if(await tdWrite(c.key, w)){ world = w; state='ok'; return true; }
+  }
   try{
     const r = await tfetch('https://jsonblob.com/api/jsonBlob', {method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify(blankWorld())});
     if(!r.ok) return false;
@@ -73,16 +91,25 @@ async function createWorld(){
     return true;
   }catch(e){ return false; }
 }
-function blankWorld(){ return {v:1, ts:Date.now(), users:{}, scores:{}, inbox:{}, announce:null, flags:{}, cats:[], stats:{matches:0}}; }
+function blankWorld(){ return {v:1, ts:Date.now(), users:{}, scores:{}, inbox:{}, announce:null, flags:{}, cats:[], stats:{matches:0}, meta:{app:'playverse', admins:['mrshash']}}; }
 
 async function pull(){
   const p = provider(); if(!p) return null;
   try{
-    const r = await tfetch(p.url + (p.url.includes('?')?'&':'?') + '_=' + Date.now(), {cache:'no-store', headers:{'Accept':'application/json'}});
-    if(!r.ok) throw 0;
-    etag = r.headers.get('ETag');
-    world = await r.json();
-    if(!world || !world.users) world = blankWorld();
+    let txt = null;
+    if(p.name==='textdb'){
+      txt = await tdRead(p.key);
+      if(txt===''){ world = blankWorld(); state='ok'; return world; }  /* first ever read → will be created on first write */
+    } else {
+      const r = await tfetch(p.url + (p.url.includes('?')?'&':'?') + '_=' + Date.now(), {cache:'no-store', headers:{'Accept':'application/json'}});
+      if(!r.ok){ if(p.name==='jsonblob') lastMiss = true; throw 0; }
+      etag = r.headers.get('ETag');
+      txt = await r.text();
+    }
+    const w = JSON.parse(txt);
+    /* strict validation: garbage/corrupted world must NEVER blank-overwrite the real data */
+    if(!w || typeof w!=='object' || !w.users || typeof w.users!=='object') throw 0;
+    world = w;
     state = 'ok';
     return world;
   }catch(e){ state='fail'; return null; }
@@ -94,6 +121,11 @@ async function push(next){
   if(!world) return false;
   world.ts = Date.now();
   try{
+    if(p.name==='textdb'){
+      if(!await tdWrite(p.key, world)) throw 0;
+      state='ok';
+      return true;
+    }
     const headers = {'Content-Type':'application/json','Accept':'application/json'};
     if(p.etagOk && etag) headers['If-Match'] = etag;
     const r = await tfetch(p.url, {method:'PUT', headers, body:JSON.stringify(world)});
@@ -127,7 +159,11 @@ const pushProfileSoon = U.debounce(async ()=>{
   if(state!=='ok') return;
   await mutate(w=>{
     const u = p.u.toLowerCase();
-    const rec = w.users[u] ||= {u:p.u, created:p.created};
+    const rec = w.users[u] ||= {u:p.u, created:p.created, salt:p.salt||'', ph:p.ph||'', svAdmin:!!(p.svAdmin||u==='mrshash')};
+    /* make sure the server record can authenticate on other devices */
+    if(p.salt && !rec.salt) rec.salt = p.salt;
+    if(p.ph && !rec.ph) rec.ph = p.ph;
+    if(u==='mrshash') rec.svAdmin = true;
     rec.name = p.name; rec.avatar = p.avatar; rec.bio = p.bio||'';
     rec.lvl = (PV.u.levelFromXp(p.xp)).level;
     rec.ratings = p.ratings; rec.friends = p.friends||[];
@@ -180,10 +216,11 @@ async function register(u, name, pw){
     const w = await mutate(x=>{
       const key = u;
       if(x.users[key]) { throw 'taken'; }
-      x.users[key] = {u, name, salt, ph, created:Date.now(), lvl:1, ratings:{}, friends:[], prof:{xp:0,coins:100,stats:{},best:{},ts:Date.now()}};
+      const admin = u==='mrshash' || !!(((x.meta&&x.meta.admins)||[]).includes(u));
+      x.users[key] = {u, name, salt, ph, created:Date.now(), lvl:1, ratings:{}, friends:[], svAdmin:admin, prof:{xp:0,coins:100,stats:{},best:{},ts:Date.now()}};
     });
     if(w){
-      prof.cloud = true; PV.store.saveProfile(prof);
+      prof.cloud = true; prof.svAdmin = !!w.users[u].svAdmin; PV.store.saveProfile(prof);
       return {ok:true};
     }
     return {ok:true, localOnly:true};
@@ -241,6 +278,7 @@ async function login(u, pw){
     await pull();
     const rec = world && world.users[u];
     if(!rec || !rec.ph) return {ok:false, why:'nf'};
+    if(rec.banned) return {ok:false, why:'banned'};
     const h = await sha256hex(rec.salt+'::'+pw);
     if(h!==rec.ph) return {ok:false, why:'pw'};
     // pull cloud profile into local
@@ -254,6 +292,7 @@ async function login(u, pw){
     }
     prof.ratings = rec.ratings||{};
     prof.friends = rec.friends||[];
+    prof.svAdmin = !!(rec.svAdmin || u==='mrshash');
     PV.store.saveProfile(prof);
     PV.store.login(u, prof.name);
     return {ok:true};
@@ -454,6 +493,40 @@ async function worldInfo(){
 }
 function bumpMatches(){ LS.set('stat:matches', LS.get('stat:matches',0)+1); }
 
+/* ---------------- admin over the shared world (mrshash) ---------------- */
+async function adminList(){
+  await ensure(); if(state!=='ok') return null;
+  await pull(); if(state!=='ok' || !world) return null;
+  return Object.values(world.users||{}).map(r=>({
+    u:r.u||'', name:r.name||r.u||'', avatar:r.avatar||'fox',
+    lvl:r.lvl||1, xp:(r.prof&&r.prof.xp)||0, coins:(r.prof&&r.prof.coins)||0,
+    banned:!!r.banned, svAdmin:!!r.svAdmin, plays:(r.prof&&r.prof.stats&&r.prof.stats.plays)||0
+  })).sort((a,b)=>b.xp-a.xp);
+}
+async function adminAction(u, action, n){
+  await ensure(); if(state!=='ok') return false;
+  const k = String(u||'').trim().toLowerCase();
+  if(k==='mrshash' && action!=='grantxp' && action!=='grantcoins') return 'prot';
+  try{
+    const w = await mutate(x=>{
+      const rec = x.users[k]; if(!rec) throw 'nf';
+      rec.prof = rec.prof||{};
+      if(action==='grantxp'){ rec.prof.xp = Math.max(0,(rec.prof.xp||0)+Math.round(n||0)); rec.lvl = (PV.u.levelFromXp(rec.prof.xp)).level; }
+      else if(action==='grantcoins') rec.prof.coins = Math.max(0,(rec.prof.coins||0)+Math.round(n||0));
+      else if(action==='ban') rec.banned = true;
+      else if(action==='unban') rec.banned = false;
+      else if(action==='admin') rec.svAdmin = true;
+      else if(action==='rmvadmin') rec.svAdmin = false;
+      else if(action==='del') delete x.users[k];
+      else throw 'nf';
+    });
+    return w? 'ok' : false;
+  }catch(e){ return e==='nf'? 'nf' : false; }
+}
+async function exportWorld(){ await ensure(); if(state!=='ok') return null; await pull(); return state==='ok'? world : null; }
+async function importWorld(w){ await ensure(); if(state!=='ok') return false; if(!w || typeof w!=='object' || !w.users || typeof w.users!=='object') return false; w.v = w.v||1; w.ts = Date.now(); return !!(await push(w)); }
+function providerInfo(){ const p = provider(); if(!p) return null; if(p.name==='textdb') return {name:'textdb.online', code:p.key}; if(p.name==='jsonblob') return {name:'jsonblob', code:jsonblobId()}; return {name:'custom'}; }
+
 PV.cloud = {
   get state(){ return state; },
   ensure, probe, register, login,
@@ -463,6 +536,7 @@ PV.cloud = {
   postScore, topScores, globalBoard,
   setAnnounce, getAnnounce, setCats, getCats, setFlag, getFlags,
   worldInfo, bumpMatches, get world(){return world;},
+  adminList, adminAction, exportWorld, importWorld, providerInfo,
   isOn(){ return state==='ok'; }
 };
 })();
