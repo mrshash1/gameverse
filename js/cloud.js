@@ -292,6 +292,22 @@ async function login(u, pw){
     }
     prof.ratings = rec.ratings||{};
     prof.friends = rec.friends||[];
+    /* protect an existing LOCAL profile of the same username from being wiped */
+    const exist = PV.store.loadProfile(u);
+    if(exist){
+      prof.avatar = exist.avatar || prof.avatar;
+      prof.bio = exist.bio || prof.bio;
+      prof.xp = Math.max(prof.xp||0, exist.xp||0);
+      prof.coins = Math.max(prof.coins||0, exist.coins||0);
+      prof.badges = [...new Set([...(prof.badges||[]), ...(exist.badges||[])])];
+      prof.friends = [...new Set([...(prof.friends||[]), ...(exist.friends||[])])];
+      for(const [k,v] of Object.entries(exist.stats||{})){
+        if(typeof v==='object') prof.stats[k] = Object.assign({}, v, prof.stats[k]||{});
+        else if(typeof v==='number') prof.stats[k] = Math.max(v, prof.stats[k]||0);
+      }
+      if(exist.history && exist.history.length) prof.history = exist.history;
+      prof.created = exist.created || prof.created;
+    }
     prof.svAdmin = !!(rec.svAdmin || u==='mrshash');
     PV.store.saveProfile(prof);
     PV.store.login(u, prof.name);
