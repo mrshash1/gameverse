@@ -21,7 +21,8 @@ async function render(view){
     await PV.sapi.syncIntoLocal().catch?.(()=>{});
     if(isAdminUser()) return drawServerDash(view);
   }
-  /* not a server admin → legacy local gate */
+  /* mrshash (built-in admin) → full cloud/local dashboard without code gate */
+  if(isAdminUser()){ return drawLocalDash(view); }
   if(U.LS.get('admin-auth', false)===true){ return drawLocalDash(view); }
   return drawGate(view, serverOn);
 }
@@ -236,6 +237,12 @@ async function drawLocalDash(view){
   </div>
 
   <div class="card rise rise-2 mt-3">
+    <div class="row"><b>${icon('wifi',15)} ${t('ad.wUsers')}</b><span class="spacer"></span><button class="btn sm ghost" id="wrefresh">↻</button></div>
+    <p class="tiny muted mt-1">${t('ad.wUsersD')}</p>
+    <div id="wusers" class="col mt-2" style="gap:9px"></div>
+  </div>
+
+  <div class="card rise rise-2 mt-3">
     <b>${t('ad.playsByGame')}</b>
     <div class="bar-chart mt-2">
       ${playsRows.map(r=>`<div class="bar-row"><span class="bl">${esc(r.l)}</span><span class="btrack"><i style="width:${Math.round(r.v/maxV*100)}%"></i></span><span class="bv num">${fmt(r.v)}</span></div>`).join('')}
@@ -283,11 +290,87 @@ async function drawLocalDash(view){
     </div>
     <div class="row mt-3 wrap">
       <button class="btn sm ghost" id="exp">${icon('down',14)} ${t('ad.export')}</button>
+      <button class="btn sm ghost" id="wexp">☁️ ${t('ad.wBackup')}</button>
+      <button class="btn sm ghost" id="wimp">${icon('expand',14)} ${t('ad.wRestore')}</button>
       <button class="btn sm danger" id="rst">${icon('trash',14)} reset local</button>
     </div>
+    <input type="file" id="wimpf" accept="application/json,.json" style="display:none">
+    <p class="tiny muted mt-1">${t('ad.publicNote')}</p>
+    ${(()=>{ const pi = PV.cloud.providerInfo(); return (pi && pi.code)? `<p class="tiny muted" dir="ltr">☁️ ${esc(pi.name)} · ${esc(pi.code)}</p>` : ''; })()}
   </div>`;
 
   view.querySelector('#out').onclick = ()=>{ U.LS.set('admin-auth', false); location.hash='#/'; };
+
+  /* ---------- world users (cloud accounts on the free server) ---------- */
+  async function drawWorldUsers(){
+    const wrap = view.querySelector('#wusers');
+    if(!wrap || !wrap.isConnected) return;
+    wrap.innerHTML = '<div class="center" style="padding:14px"><span class="spinner" style="width:22px;height:22px"></span></div>';
+    const rows = await PV.cloud.adminList();
+    if(!wrap.isConnected) return;
+    if(!rows){ wrap.innerHTML = `<div class="tiny muted">${t('st.cloud')}: ${t('c.off')}</div>`; return; }
+    if(!rows.length){ wrap.innerHTML = `<div class="tiny muted">${t('ad.noWUsers')}</div>`; return; }
+    const meU = (PV.store.session && PV.store.session.u || '').toLowerCase();
+    wrap.innerHTML = rows.map(u=>{
+      const isMe = u.u.toLowerCase()===meU;
+      return `<div class="fr-row" style="${u.banned?'opacity:.55;filter:grayscale(.5)':''}">
+        ${avatarHtml({avatar:u.avatar, xp:u.xp}, 40, {lvl:true})}
+        <div class="fi">
+          <b>${esc(u.name)} ${isMe?`<span class="badge pp" style="font-size:.62rem">👑 ${t('ad.youTag')}</span>`:''}${u.svAdmin?`<span class="badge" style="font-size:.62rem">${icon('shield',10)} admin</span>`:''}${u.banned?`<span class="badge" style="font-size:.62rem;background:var(--err);color:#fff">${t('ad.ban')}</span>`:''}</b>
+          <span class="tiny muted num">@${esc(u.u)} · ${t('c.lvl')} ${fmt(u.lvl)} · ${fmt(u.xp)} XP · ${icon('coin',11)} ${fmt(u.coins)} · ${fmt(u.plays)} ${t('gd.plays')}</span>
+        </div>
+        <div class="fr-actions">${isMe? `<span class="tiny muted">${t('ad.protected')}</span>` : `
+          <button class="btn sm cyan" data-wxp="${esc(u.u)}" title="${t('ad.gxp')}">+XP</button>
+          <button class="btn sm gold" data-wco="${esc(u.u)}" title="${t('ad.gcoin')}">+🪙</button>
+          ${u.svAdmin? `<button class="btn sm ghost" data-wrm="${esc(u.u)}">${t('ad.rmvAdm')}</button>` : `<button class="btn sm ghost" data-wad="${esc(u.u)}">${t('ad.mkAdm')}</button>`}
+          ${u.banned? `<button class="btn sm green" data-wub="${esc(u.u)}">${t('ad.unban')}</button>` : `<button class="btn sm warn" data-wb="${esc(u.u)}">${t('ad.ban')}</button>`}
+          <button class="btn sm icon danger" data-wdel="${esc(u.u)}" title="${t('ad.delU')}">${icon('trash',14)}</button>`}
+        </div>
+      </div>`;
+    }).join('');
+    const act = async (u, action, n)=>{
+      const r = await PV.cloud.adminAction(u, action, n);
+      if(r==='ok') PV.ui.toast(t('ad.actDone'),'ok','check');
+      else if(r==='nf') PV.ui.toast(t('au.nf'),'err');
+      else if(r==='prot') PV.ui.toast(t('ad.protected'),'info');
+      else PV.ui.toast(t('st.cloud')+' '+t('c.off'),'err');
+      drawWorldUsers();
+    };
+    wrap.querySelectorAll('[data-wxp]').forEach(b=> b.onclick = ()=> PV.ui.modal({title:t('ad.gxp')+' — '+b.dataset.wxp, body:`<input class="inp num" id="gxn" dir="ltr" placeholder="100" style="max-width:140px">`, actions:[{label:t('c.ok'), onClick:(m)=>{ const n = Math.round(+m.querySelector('#gxn').value||0); if(n) act(b.dataset.wxp,'grantxp',n); }}]}));
+    wrap.querySelectorAll('[data-wco]').forEach(b=> b.onclick = ()=> PV.ui.modal({title:t('ad.gcoin')+' — '+b.dataset.wco, body:`<input class="inp num" id="gcn" dir="ltr" placeholder="50" style="max-width:140px">`, actions:[{label:t('c.ok'), onClick:(m)=>{ const n = Math.round(+m.querySelector('#gcn').value||0); if(n) act(b.dataset.wco,'grantcoins',n); }}]}));
+    wrap.querySelectorAll('[data-wad]').forEach(b=> b.onclick = ()=> act(b.dataset.wad,'admin'));
+    wrap.querySelectorAll('[data-wrm]').forEach(b=> b.onclick = ()=> act(b.dataset.wrm,'rmvadmin'));
+    wrap.querySelectorAll('[data-wb]').forEach(b=> b.onclick = ()=> act(b.dataset.wb,'ban'));
+    wrap.querySelectorAll('[data-wub]').forEach(b=> b.onclick = ()=> act(b.dataset.wub,'unban'));
+    wrap.querySelectorAll('[data-wdel]').forEach(b=> b.onclick = async ()=>{
+      if(await PV.ui.confirmDlg(t('ad.delC'), t('ad.delU'))) act(b.dataset.wdel,'del');
+    });
+  }
+  drawWorldUsers();
+  view.querySelector('#wrefresh').onclick = drawWorldUsers;
+
+  /* ---------- world backup / restore ---------- */
+  view.querySelector('#wexp').onclick = async ()=>{
+    const w = await PV.cloud.exportWorld();
+    if(!w){ PV.ui.toast(t('st.cloud')+' '+t('c.off'),'err'); return; }
+    const blob = new Blob([JSON.stringify(w, null, 2)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'playverse-world-'+U.todayKey()+'.json'; a.click();
+  };
+  const wimpf = view.querySelector('#wimpf');
+  view.querySelector('#wimp').onclick = ()=> wimpf.click();
+  wimpf.onchange = async ()=>{
+    const f = wimpf.files && wimpf.files[0]; if(!f) return;
+    try{
+      const w = JSON.parse(await f.text());
+      if(!w || !w.users){ PV.ui.toast(t('ad.wBadFile'),'err'); return; }
+      if(await PV.ui.confirmDlg(t('ad.wRestore')+'?', t('c.ok'))){
+        const ok = await PV.cloud.importWorld(w);
+        PV.ui.toast(ok? t('ad.wRestored') : t('ad.wBadFile'), ok?'ok':'err');
+        if(ok) drawWorldUsers();
+      }
+    }catch(e){ PV.ui.toast(t('ad.wBadFile'),'err'); }
+  };
+
   view.querySelector('#annGo').onclick = async ()=>{
     const txt = view.querySelector('#ann').value.trim();
     if(!txt) return;
