@@ -12,7 +12,7 @@ const factories = new Map();   // id → factory fn
 const loadedScripts = new Set();
 
 const BASE_CATS = ['board','classic','party','brain','speed','word','luck','family','strategy','sandbox'];
-PV.ver = '4.0.0';
+PV.ver = '4.2.0';
 
 function register(meta){
   const existing = meta.id ? games.get(meta.id) : null;
@@ -46,7 +46,7 @@ function loadFactory(id){
   return factories.get(id) || null;
 }
 /* lazy-load game module from games/<id>/game.js (cache-busted so deploys go live instantly) */
-const PV_VERSION = '4.1.0';
+const PV_VERSION = '4.2.0';
 function ensureLoaded(id){
   return new Promise((res, rej)=>{
     if(factories.has(id) || loadedScripts.has(id)) return res(factories.get(id)||null);
@@ -87,5 +87,5 @@ function bumpPlays(id){
 }
 function ids(){ return [...games.keys()]; }
 
-PV.registry = { register, get, all, byCat, allCats, catLabel, ensureLoaded, loadFactory, bumpPlays, enabled, ids, BASE_CATS };
+PV.registry = { register, get, all, byCat, allCats, customCats, catLabel, ensureLoaded, loadFactory, bumpPlays, enabled, ids, BASE_CATS };
 })();
