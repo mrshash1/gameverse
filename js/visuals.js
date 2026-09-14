@@ -129,6 +129,68 @@ function thumbSvg(id){
       <g transform="translate(128 74)"><path d="M18 0 L36 9 L36 27 L18 36 L0 27 L0 9 Z" fill="#8b6cff"/><path d="M0 9 L18 18 L18 36 L0 27 Z" fill="#6d4dff"/></g>
       <g transform="translate(64 96)" fill="#ffd93d"><rect x="0" y="0" width="12" height="12" rx="2"/><rect x="16" y="0" width="12" height="12" rx="2"/><rect x="8" y="-14" width="12" height="12" rx="2"/></g>
       <circle cx="170" cy="22" r="10" fill="#fff" opacity=".85"/><circle cx="206" cy="44" r="6" fill="#fff" opacity=".6"/></g>`,
+    chess: `<g transform="translate(58 22)">
+      <g transform="rotate(-6 62 55)"><rect width="124" height="110" rx="14" fill="rgba(255,255,255,.94)"/>
+      <g fill="#e2ddca">${[0,2,4,6].map(r=>[0,2,4,6].map(c=>`<rect x="${12+c*16}" y="${10+r*14}" width="16" height="14"/>`).join('')).join('')}</g>
+      <g fill="#31225c"><circle cx="94" cy="34" r="9"/><rect x="87" y="40" width="14" height="26" rx="5"/><circle cx="36" cy="76" r="8"/><rect x="30" y="81" width="12" height="20" rx="4"/><circle cx="66" cy="76" r="8"/><rect x="60" y="81" width="12" height="20" rx="4"/></g>
+      <g fill="#b44dff"><circle cx="66" cy="34" r="10"/><path d="M66 24 L74 14 L78 22 L86 16 L82 30 Z"/><rect x="58" y="40" width="16" height="26" rx="5"/><path d="M60 66 h20 v6 h-20 Z"/></g></g>
+      <circle cx="196" cy="28" r="8" fill="#ffd93d"/></g>`,
+    checkers: `<g transform="translate(60 22)">
+      <g transform="rotate(4 62 55)"><rect width="124" height="110" rx="14" fill="rgba(255,255,255,.94)"/>
+      <g fill="#d9c9a3">${[0,1,2,3].map(r=>[0,1,2,3].map(c=>`<rect x="${12+c*26}" y="${10+r*24}" width="26" height="24" opacity="${(r+c)%2?0:1}"/>`).join('')).join('')}</g>
+      <circle cx="51" cy="22" r="10" fill="#31225c"/><circle cx="103" cy="22" r="10" fill="#31225c"/><circle cx="25" cy="46" r="10" fill="#31225c"/>
+      <circle cx="51" cy="94" r="11" fill="#b44dff"/><circle cx="51" cy="94" r="6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="103" cy="70" r="11" fill="#b44dff"/></g>
+      <circle cx="200" cy="118" r="7" fill="#ffd93d"/></g>`,
+    battleship: `<g transform="translate(44 26)">
+      <g opacity=".5">${[0,1,2,3,4].map(c=>`<rect x="${c*34}" y="0" width="32" height="96" rx="6" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2"/>`).join('')}${[0,1,2].map(r=>`<rect x="0" y="${r*32}" width="170" height="30" rx="6" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2"/>`).join('')}</g>
+      <path d="M28 62 Q60 34 116 40 L150 46 Q168 50 164 62 L156 70 L34 70 Z" fill="#eef2ff"/>
+      <path d="M62 40 L62 12 L86 40 Z" fill="#ff5c9d"/><path d="M94 44 L94 24 L112 44 Z" fill="#ffd93d"/>
+      <circle cx="42" cy="56" r="5" fill="#3ba9ff"/><circle cx="130" cy="58" r="5" fill="#3ba9ff"/>
+      <path d="M20 92 Q40 84 60 92 T100 92 T140 92" stroke="rgba(255,255,255,.8)" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <circle cx="188" cy="30" r="7" fill="#ff5c9d"/><path d="M176 44 h24" stroke="#ff5c9d" stroke-width="4" stroke-linecap="round"/></g>`,
+    minesweeper: `<g transform="translate(64 24)">
+      <rect width="112" height="104" rx="16" fill="rgba(255,255,255,.94)"/>
+      <g stroke="#31225c" stroke-width="7" stroke-linecap="round"><line x1="56" y1="22" x2="56" y2="34"/><line x1="26" y1="52" x2="36" y2="52"/><line x1="76" y1="52" x2="86" y2="52"/><line x1="34" y1="30" x2="41" y2="37"/><line x1="78" y1="30" x2="71" y2="37"/><line x1="34" y1="74" x2="41" y2="67"/><line x1="78" y1="74" x2="71" y2="67"/></g>
+      <circle cx="56" cy="52" r="18" fill="#31225c"/><circle cx="49" cy="45" r="5" fill="#fff" opacity=".85"/>
+      <g transform="translate(78 60)"><path d="M0 0 V26" stroke="#31225c" stroke-width="5" stroke-linecap="round"/><path d="M0 2 L20 8 L0 14 Z" fill="#ff5c9d"/></g>
+      <text x="20" y="96" font-size="17" font-weight="900" fill="#3ba9ff" font-family="sans-serif">1</text><text x="86" y="30" font-size="17" font-weight="900" fill="#22c55e" font-family="sans-serif">2</text></g>
+      <circle cx="200" cy="30" r="6" fill="#ffd93d"/></g>`,
+    sudoku: `<g transform="translate(64 22)">
+      <rect width="112" height="106" rx="14" fill="rgba(255,255,255,.94)"/>
+      <g stroke="#c9d2e8" stroke-width="2">${[1,2].map(i=>`<line x1="${12+i*30}" y1="8" x2="${12+i*30}" y2="98"/><line x1="12" y1="${8+i*30}" x2="100" y2="${8+i*30}"/>`).join('')}</g>
+      <rect x="12" y="8" width="88" height="90" rx="8" fill="none" stroke="#31225c" stroke-width="4"/>
+      <g font-family="sans-serif" font-weight="900" font-size="19" text-anchor="middle"><text x="27" y="30" fill="#31225c">5</text><text x="87" y="30" fill="#b44dff">3</text><text x="57" y="60" fill="#31225c">7</text><text x="27" y="90" fill="#00b8ac">1</text><text x="87" y="90" fill="#ff5c9d">9</text></g></g>
+      <circle cx="204" cy="118" r="6" fill="#ffd93d"/></g>`,
+    '2048': `<g transform="translate(52 30)">
+      <rect x="0" y="24" width="64" height="64" rx="12" fill="rgba(255,255,255,.55)"/><rect x="72" y="24" width="64" height="64" rx="12" fill="#ffd93d"/><text x="104" y="68" font-size="26" font-weight="900" text-anchor="middle" fill="#8a6d00" font-family="sans-serif">64</text>
+      <rect x="36" y="-4" width="64" height="56" rx="12" fill="#ff8a3d" transform="translate(28 6)"/><text x="96" y="38" font-size="23" font-weight="900" text-anchor="middle" fill="#fff" font-family="sans-serif" transform="translate(28 6)">256</text>
+      <rect x="52" y="42" width="72" height="72" rx="14" fill="#ff5c9d" transform="translate(30 4)"/><text x="118" y="88" font-size="27" font-weight="900" text-anchor="middle" fill="#fff" font-family="sans-serif" transform="translate(30 4)">2048</text>
+      <circle cx="24" cy="12" r="7" fill="#fff" opacity=".7"/></g>`,
+    tetris: `<g transform="translate(56 22)">
+      <g transform="translate(8 62)"><rect width="28" height="28" rx="6" fill="#3ba9ff"/><rect x="30" width="28" height="28" rx="6" fill="#3ba9ff"/><rect x="60" width="28" height="28" rx="6" fill="#3ba9ff"/><rect x="30" y="-30" height="28" width="28" rx="6" fill="#3ba9ff"/></g>
+      <g transform="translate(98 24)"><rect width="26" height="26" rx="6" fill="#ff5c9d"/><rect x="28" width="26" height="26" rx="6" fill="#ff5c9d"/><rect x="14" y="-26" width="26" height="26" rx="6" fill="#ff5c9d"/><rect x="14" y="26" width="26" height="26" rx="6" fill="#ff5c9d"/></g>
+      <g transform="translate(100 84)"><rect width="26" height="26" rx="6" fill="#22c55e"/><rect x="28" width="26" height="26" rx="6" fill="#22c55e"/><rect x="56" width="26" height="26" rx="6" fill="#22c55e"/><rect x="56" y="-26" width="26" height="26" rx="6" fill="#22c55e"/></g>
+      <rect x="20" y="8" width="26" height="26" rx="6" fill="#ffd93d"/><rect x="20" y="-18" width="26" height="26" rx="6" fill="#ffd93d"/></g>
+      <circle cx="204" cy="26" r="6" fill="#fff" opacity=".7"/></g>`,
+    snake: `<g transform="translate(48 28)">
+      <rect width="144" height="96" rx="18" fill="rgba(255,255,255,.2)"/>
+      <path d="M14 78 Q40 78 40 56 Q40 34 66 34 Q92 34 92 56 Q92 78 118 78 L128 78" stroke="#22c55e" stroke-width="16" fill="none" stroke-linecap="round"/>
+      <circle cx="132" cy="78" r="11" fill="#22c55e"/><circle cx="136" cy="74" r="2.6" fill="#fff"/><path d="M143 78 l8 -3 M143 78 l8 3" stroke="#22c55e" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="34" cy="26" r="9" fill="#ff4d6d"/><path d="M34 17 q1 -6 6 -7" stroke="#22c55e" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <circle cx="112" cy="22" r="6" fill="#ffd93d"/></g>`,
+    flappy: `<g transform="translate(58 28)">
+      <rect x="0" y="0" width="26" height="46" rx="8" fill="#22c55e"/><rect x="-4" y="40" width="34" height="16" rx="6" fill="#16a34a"/>
+      <rect x="0" y="78" width="26" height="44" rx="8" fill="#22c55e"/><rect x="-4" y="70" width="34" height="16" rx="6" fill="#16a34a"/>
+      <rect x="118" y="-6" width="26" height="52" rx="8" fill="#22c55e"/><rect x="114" y="38" width="34" height="16" rx="6" fill="#16a34a"/>
+      <rect x="118" y="86" width="26" height="36" rx="8" fill="#22c55e"/><rect x="114" y="78" width="34" height="16" rx="6" fill="#16a34a"/>
+      <g transform="translate(56 44) rotate(-8)"><ellipse cx="0" cy="0" rx="26" ry="21" fill="#ffd93d"/><ellipse cx="-8" cy="4" rx="12" ry="9" fill="#ffb020"/><circle cx="13" cy="-6" r="4.5" fill="#fff"/><circle cx="14.5" cy="-6" r="2.2" fill="#31225c"/><path d="M24 0 l10 3 l-10 4 Z" fill="#ff8a3d"/></g>
+      <circle cx="36" cy="16" r="5" fill="#fff" opacity=".6"/></g>`,
+    snakesladders: `<g transform="translate(52 20)">
+      <rect width="136" height="110" rx="14" fill="rgba(255,255,255,.94)"/>
+      <g stroke="#d9c9a3" stroke-width="2">${[1,2,3].map(i=>`<line x1="${136/4*i}" y1="6" x2="${136/4*i}" y2="104"/><line x1="8" y1="${6+98/4*i}" x2="128" y2="${6+98/4*i}"/>`).join('')}</g>
+      <g stroke="#3ba9ff" stroke-width="7" stroke-linecap="round"><line x1="30" y1="88" x2="70" y2="26"/><line x1="44" y1="92" x2="84" y2="30"/></g><g stroke="#3ba9ff" stroke-width="4"><line x1="34" y1="80" x2="48" y2="84"/><line x1="48" y1="62" x2="62" y2="66"/><line x1="62" y1="44" x2="76" y2="48"/></g>
+      <path d="M110 96 Q130 80 118 60 Q106 42 122 26" stroke="#22c55e" stroke-width="9" fill="none" stroke-linecap="round"/><circle cx="124" cy="20" r="6" fill="#22c55e"/>
+      <circle cx="24" cy="100" r="7" fill="#ff5c9d"/><circle cx="62" cy="100" r="7" fill="#ffd93d"/><circle cx="112" cy="12" r="7" fill="#31225c"/></g>`,
   };
   function gr(id){
     const maps = {
@@ -142,6 +204,16 @@ function thumbSvg(id){
       risk:'<stop offset="0" stop-color="#b44dff"/><stop offset="1" stop-color="#6d4dff"/>',
       crusade:'<stop offset="0" stop-color="#d97706"/><stop offset="1" stop-color="#b91c1c"/>',
       voxel:'<stop offset="0" stop-color="#38bdf8"/><stop offset="1" stop-color="#34d399"/>',
+      chess:'<stop offset="0" stop-color="#5a3df0"/><stop offset="1" stop-color="#b44dff"/>',
+      checkers:'<stop offset="0" stop-color="#ff5c9d"/><stop offset="1" stop-color="#b44dff"/>',
+      battleship:'<stop offset="0" stop-color="#1f7fd4"/><stop offset="1" stop-color="#00c9bd"/>',
+      minesweeper:'<stop offset="0" stop-color="#64748b"/><stop offset="1" stop-color="#31225c"/>',
+      sudoku:'<stop offset="0" stop-color="#0ea5a0"/><stop offset="1" stop-color="#3b6fd4"/>',
+      '2048':'<stop offset="0" stop-color="#ff8a3d"/><stop offset="1" stop-color="#ff5c9d"/>',
+      tetris:'<stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#ff5c9d"/>',
+      snake:'<stop offset="0" stop-color="#16a34a"/><stop offset="1" stop-color="#0ea5a0"/>',
+      flappy:'<stop offset="0" stop-color="#ffd93d"/><stop offset="1" stop-color="#ff8a3d"/>',
+      snakesladders:'<stop offset="0" stop-color="#22c55e"/><stop offset="1" stop-color="#ffd93d"/>',
     };
     return maps[id]||maps.tictactoe;
   }

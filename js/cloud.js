@@ -317,6 +317,39 @@ async function login(u, pw){
   return {ok:false, why:'nf'};
 }
 
+/* ---- change password (task 3-g): verify old pw with the SAME salt+SHA-256
+   routine used at register/login, then rotate salt+ph locally and push to the
+   cloud world. Server (sapi) accounts keep their password on the server — we
+   honestly report {why:'nopw'} when no salted record exists anywhere. ------ */
+async function changePassword(u, oldPw, newPw){
+  u = String(u||'').trim().toLowerCase();
+  const p = PV.store.me();
+  if(!p || PV.store.isGuest() || String(p.u).toLowerCase()!==u) return {ok:false, why:'auth'};
+  newPw = String(newPw||'');
+  if(newPw.length<6) return {ok:false, why:'weak'};
+  /* locate the authoritative salted record: local profile first, cloud world second */
+  let salt = p.salt||'', ph = p.ph||'';
+  await ensure();
+  let rec = null;
+  if(state==='ok'){
+    await pull();
+    rec = world && world.users && world.users[u];
+    if(rec && rec.ph && !(salt && ph)){ salt = rec.salt||''; ph = rec.ph; }
+  }
+  if(!(salt && ph)) return {ok:false, why:'nopw'};
+  const hOld = await sha256hex(salt+'::'+String(oldPw||''));
+  if(hOld !== ph) return {ok:false, why:'pw'};
+  const nsalt = randomSalt();
+  const nph = await sha256hex(nsalt+'::'+newPw);
+  p.salt = nsalt; p.ph = nph; PV.store.saveProfile(p);
+  let synced = false;
+  if(state==='ok' && rec){
+    try{ synced = !!(await mutate(w=>{ const r=w.users[u]; if(!r) throw 'nf'; r.salt=nsalt; r.ph=nph; })); }catch(e){ synced=false; }
+    if(!synced){ try{ synced = !!(await mutate(w=>{ const r=w.users[u]; if(r){ r.salt=nsalt; r.ph=nph; } })); }catch(e){ synced=false; } }
+  }
+  return {ok:true, cloud:synced, localOnly:!synced};
+}
+
 const syncFromCloudSoon = U.debounce(async ()=>{
   if(PV.store.isGuest() || !PV.store.session) return;
   /* REAL SERVER sync (profile + server inbox → notifications) */
@@ -545,7 +578,7 @@ function providerInfo(){ const p = provider(); if(!p) return null; if(p.name==='
 
 PV.cloud = {
   get state(){ return state; },
-  ensure, probe, register, login,
+  ensure, probe, register, login, changePassword,
   pushProfile: pushProfileSoon,
   syncNow: syncFromCloudSoon,
   sendFriendReq, cloudFriendsBoth,

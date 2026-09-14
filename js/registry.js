@@ -12,7 +12,7 @@ const factories = new Map();   // id → factory fn
 const loadedScripts = new Set();
 
 const BASE_CATS = ['board','classic','party','brain','speed','word','luck','family','strategy','sandbox'];
-PV.ver = '4.2.0';
+PV.ver = '5.0.0';
 
 function register(meta){
   const existing = meta.id ? games.get(meta.id) : null;
@@ -41,12 +41,22 @@ function register(meta){
   {id:'risk',      cats:['strategy','board','classic'], players:[2,4], weight:86},
   {id:'crusade',   cats:['strategy','classic'],       players:[1,1], weight:82},
   {id:'voxel',     cats:['sandbox','strategy','family'], players:[1,1], weight:78},
+  {id:'chess',     cats:['board','classic','brain'],   players:[2,2], modes:['solo','online'], weight:96},
+  {id:'battleship',cats:['board','strategy','classic'],players:[2,2], modes:['solo','online'], weight:91},
+  {id:'checkers',  cats:['board','classic','family'],  players:[2,2], modes:['solo','online'], weight:89},
+  {id:'tetris',    cats:['classic','speed','family'],  players:[1,1], modes:['solo'], weight:87},
+  {id:'minesweeper',cats:['brain','classic'],          players:[1,1], modes:['solo'], weight:85},
+  {id:'sudoku',    cats:['brain','classic'],           players:[1,1], modes:['solo'], weight:83},
+  {id:'2048',      cats:['brain','classic'],           players:[1,1], modes:['solo'], weight:81},
+  {id:'snake',     cats:['speed','classic'],           players:[1,1], modes:['solo'], weight:79},
+  {id:'flappy',    cats:['speed','party'],             players:[1,1], modes:['solo'], weight:77},
+  {id:'snakesladders',cats:['family','luck','party'],  players:[2,4], modes:['solo'], weight:75},
 ].forEach(register);
 function loadFactory(id){
   return factories.get(id) || null;
 }
 /* lazy-load game module from games/<id>/game.js (cache-busted so deploys go live instantly) */
-const PV_VERSION = '4.2.0';
+const PV_VERSION = '5.0.0';
 function ensureLoaded(id){
   return new Promise((res, rej)=>{
     if(factories.has(id) || loadedScripts.has(id)) return res(factories.get(id)||null);
